@@ -138,9 +138,14 @@ Layout.prototype.setRespondEventElement = function (element) {
 	setAttr(element, 'data-hasEvent', true)
 }
 
+
+// e.button==0鼠标左键
+// e.button==1鼠标滚轮键
+// e.button==2鼠标右键
 function onMouseDown(layout, e) {
+	console.log(e)
 	var hasEvent = e.target.getAttribute('data-hasEvent');
-	if (!hasEvent) return;
+	if (!hasEvent||e.button!=0) return;
 	// console.log('按下')
 	layout.mouseHasDown = true;
 	layout.handleName = e.target.getAttribute('data-handleName');
