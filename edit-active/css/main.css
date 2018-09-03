@@ -1,0 +1,322 @@
+*{
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+}
+html{
+	height: 100%;
+}
+body{
+	height: 100%;
+	padding: 0;
+	margin: 0;
+}
+ul{
+	list-style: none;
+}
+.scroll::-webkit-scrollbar{
+    width: 0px;
+}
+/* .scroll::-webkit-scrollbar-thumb{
+    border-radius: 5px;
+    background-color: rgba(201, 201, 201, 0.719);
+}
+.scroll::-webkit-scrollbar-thumb:hover{
+    background-color: rgb(168, 168, 168);
+}
+.scroll::-webkit-scrollbar-track{
+    border-radius: 5px;
+    background-color: rgba(216, 216, 216, 0.5);
+} */
+.wrapper{
+	width: 1000px;
+	height: 100%;
+	margin: 0 auto;
+}
+.container{
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.phone{
+	position: relative;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 400px;
+	height: 807px;
+	background-image: url(../img/phone.png);
+	background-size: 100%;
+	padding: 96px 23px 87px 22px;
+	background-repeat: no-repeat;
+	float: left;
+}
+#pageView{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+#pageView .block{
+	border-bottom: 1px dashed #666;
+}
+
+#pageView #layout span:hover i{
+	display: block;
+}
+
+#pageView #layout .eventbox span:hover{
+	cursor: move;
+}
+
+#pageView #layout .eventbox span{
+	border: 1px dashed #fff;
+	background-color: rgba(0, 17, 255, 0.336);
+}
+
+#pageView #layout .block>i{
+	display: block;
+}
+
+#layout{
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+#layout img{
+	width: 100%;
+	float: left;
+}
+#layout .block{
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+
+#layout .eventbox{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+}
+
+#layout i.close{
+	position: absolute;
+	display: none;
+	cursor: pointer;
+	font-style: normal;
+	text-align: center;
+	width: 20px;
+	height: 20px;
+	left: 0;
+	top: 0;
+	line-height: 20px;
+	font-size: 18px;
+	color: #fff;
+	background: rgb(255, 125, 125);
+	z-index: 10000;
+}
+
+#layout .eventbox{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#layout .eventbox span{
+	position: absolute;
+	display: block;
+}
+
+#layout .eventbox span i.close{
+	display: none;
+	font-style: normal;
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	left: -10px;
+	top: -10px;
+	line-height: 20px;
+	border-radius: 50%;
+	text-align: center;
+	font-size: 12px;
+	color: #fff;
+	background:rgb(255, 125, 125);
+}
+
+#layout .eventbox span i.close:hover{
+	cursor: pointer;
+}
+
+.tools{
+	padding-top: 40px;
+	margin-left: 440px;
+}
+
+.row {
+	margin-bottom: 30px;
+}
+
+.row h3{
+	font-size: 16px;
+	color: #666;
+	margin-bottom: 10px;
+}
+
+.row .filename{
+	margin-top: 10px;
+}
+
+.row .filename input{
+	line-height: 26px;
+	font-size: 14px;
+	color: #666;
+	padding: 0 10px;
+}
+
+#selectImage{
+	width: 0;
+	height: 0;
+	display: none;
+}
+.btn{
+	cursor: pointer;
+    display: inline-block;
+	padding: 0 8px;
+	min-width: 65px;
+    height: 30px;
+    font-size: 14px;
+    line-height: 30px;
+    border: none;
+    background: rgb(73, 137, 255);
+    text-align: center;
+    border-radius: 3px;
+    color: #fff;
+}
+.btn:hover{
+	background: rgb(41, 116, 255);
+}
+
+.btn.cancel{
+	background: rgb(255, 120, 120);
+}
+.btn.cancel:hover{
+	background: rgb(255, 104, 104);
+}
+
+#eventMenu {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: none;
+	justify-content: center;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.5);
+}
+#eventMenu .container{
+	width: 300px;
+	height: 240px;
+	border-radius: 5px;
+	background: #fff;
+	box-shadow: 5px 5px 5px #666;
+	overflow: hidden;
+}
+#eventMenu .content{
+	position: relative;
+	height: 100%;
+}
+#eventMenu .header{
+	position: absolute;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+#eventMenu h3{
+	font-size: 18px;
+	text-align: center;
+	line-height: 40px;
+	color: #333;
+	border-bottom: 1px solid #ddd;
+}
+#eventMenu .body{
+	height: 100%;
+	padding: 60px 20px;
+}
+
+#eventMenu .footer{
+	position: absolute;
+	width: 100%;
+	bottom: 0;
+	padding: 10px 0 10px;
+	text-align: center;
+}
+
+#eventMenu .content .footer .btn{
+	margin: 0 20px;
+}
+
+#eventMenu .body select,#eventMenu .body input{
+	display: inline-block;
+	width: 100px;
+	height: 30px;
+	line-height: 30px;
+	border: 1px solid #999;
+	border-radius: 4px;
+	padding: 0 5px;
+	text-align: center;
+	color: #666;
+}
+
+#eventMenu .body .select-box{
+	margin-bottom: 10px;
+}
+
+#eventMenu .body #subList{
+	display: none;
+}
+#searchBox {
+	display: none;
+}
+#eventName{
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+
+
+.progress{
+    margin-top:2px;
+    width: 200px;
+    height: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+}
+.progress-bar{ 
+    background-color: rgb(92, 184, 92);
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.14902) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.14902) 50%, rgba(255, 255, 255, 0.14902) 75%, transparent 75%, transparent);
+    background-size: 40px 40px;
+    box-shadow: rgba(0, 0, 0, 0.14902) 0px -1px 0px 0px inset;
+    box-sizing: border-box;
+    color: rgb(255, 255, 255);
+    display: block;
+    float: left; 
+    font-size: 12px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    transition-delay: 0s;
+    transition-duration: 0.6s;
+    transition-property: width;
+    transition-timing-function: ease;
+    width: 266.188px;
+}
