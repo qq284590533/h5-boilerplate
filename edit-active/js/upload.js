@@ -69,7 +69,8 @@ function fileSucesse(file){
 
 function getOssSign(files){
 	$.ajax({ //异步请求返回给后台
-		url: 'https://owneradmintest.tticar.com/oss/getSign',
+		// url: 'https://owneradmintest.tticar.com/oss/getSign',
+		url: 'https://owneradmin.tticar.com/oss/getSign',
 		type: 'post',
 		async : false,
 		data: {
@@ -123,7 +124,11 @@ function ossBeforeUploadAction(up, file) {
 
 function calculate_object_name(file){
 	var g_object_name = ossParams["key"]+file.name;
-	signParams.fileServerUrl = ossParams["host"] + g_object_name;
+	if(ossParams["host"]=="https://tticar-pro.oss-cn-shanghai.aliyuncs.com/"){
+		signParams.fileServerUrl = "https://f.tticar.com/"+ g_object_name;
+	}else{
+		signParams.fileServerUrl = ossParams["host"]+ g_object_name;
+	}
 	signParams.fileName = g_object_name;
 	fileJson[file.id] = signParams.fileServerUrl;
 	return g_object_name;
