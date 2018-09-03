@@ -226,7 +226,6 @@ function addEventBox_mousedown(layout, e) {
 	layout.eventBox.appendChild(span);
 	layout.spanBox = span;
 	addCloseBtn(layout, span);
-	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
 	layout.bindEvent(layout.spanBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(layout.spanBox, 'mouseup', layout.onMouseUp);
 }
@@ -254,6 +253,7 @@ function addEventBox_mouseup(layout, e) {
 		layout.spanBox.remove();
 		// console.log(layout.layoutData)
 	}
+	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
 	layout.boxStyle = {
 		w: null,
 		h: null	
