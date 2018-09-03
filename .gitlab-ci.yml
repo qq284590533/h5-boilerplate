@@ -1,0 +1,20 @@
+# This file is a template, and might need editing before it works on your project.
+# Official framework image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/node/tags/
+image: registry-internal.cn-shanghai.aliyuncs.com/czy/ossutil:go1.9.2-alpine3.6-1.4.0
+
+variables:
+  ALIYUN_OSS_BUCKETNAME: h5-boilerplate
+
+before_script:
+  - ossutil config -e $ALIYUN_OSS_ENDPOINT -i $ALIYUN_OSS_KEYID -k $ALIYUN_OSS_KEYSECRET
+
+release-edit-active:
+  variables:
+    ALIYUN_OSS_PREFIX: "edit-active"
+  script:
+    - rm -rf .git .gitlab-ci.yml
+    - ossutil cp -ru $ALIYUN_OSS_PREFIX/ oss://$ALIYUN_OSS_BUCKETNAME/$ALIYUN_OSS_PREFIX
+  tags:
+    - docker
+  when: manual
