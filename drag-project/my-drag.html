@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>拖拽</title>
+	<link rel="stylesheet" type="text/css" href="css/my-drag.css" />
+</head>
+
+<body>
+
+	<div class="container">
+		<div class="tab_left">
+			<div class="tab_list">
+				<p class="table_list_name">列表一</p>
+				<ul class="tab_classify">
+					<li key='serial-num'><span>序号</span><b></b><p class="fill-data">{serial-num}</p></li>
+					<li key='table' class="table">
+						<p class="table_name">表格</p>
+						<table class="table-grid">
+							<tr>
+								<td>Data</td>
+								<td>Data</td>
+								<td>Data</td>
+							</tr>
+							<tr>
+								<td>Data</td>
+								<td>Data</td>
+								<td>Data</td>
+							</tr>
+						</table>
+						<div class="table_list">
+							<p key='table-number'>序号</p>
+							<p key='table-count'>数量</p>
+							<p key='table-company'>采购单位</p>
+							<p key='table-price'>数额</p>
+							<p key='table-code'>存货编码</p>
+							<p key='table-model'>规格型号</p>
+							<p key='table-size'>尺寸</p>
+							<p key='table-unit'>采购单位</p>
+						</div>
+						<b></b>
+					</li>
+					
+					<li key='barcode'><span>条形码</span><b></b><p class="fill-data">{barcode}</p></li>
+					<li key='input_text' class="input_box"><span>标题输入框</span><b></b> <input type="text" placeholder="添加标题"><h2></h2></li>
+					<li key='input_info' class="input_box"><span>描述输入框</span><b></b> <input type="text" placeholder="添加描述"><label class="description"></label></li>
+					<li key='project'><span>项目</span><b></b><p class="fill-data">{project}</p></li>
+					<li key='inventory-addr'><span>存货地址</span><b></b><p class="fill-data">{inventory-addr}</p></li>
+					<li key='inventory-img'><span>存货图片</span><b></b><p class="fill-data">{inventory-img}</p></li>
+					<li key='inventory-code'><span>存货编码</span><b></b><p class="fill-data"></p></li>
+					<li key='standard-modal'><span>规格型号</span><b></b><p class="fill-data"></p></li>
+					<li key='color'><span>颜色</span><b></b><p class="fill-data"></p></li>
+					<li key='size'><span>尺寸</span><b></b><p class="fill-data"></p></li>
+					<li key='purchase-unit'><span>采购单位</span><b></b><p class="fill-data"></p></li>
+					<li key='quantity'><span>数量</span><b></b><p class="fill-data"></p></li>
+					<li key='rate'><span>换算率</span><b></b><p class="fill-data"></p></li>
+					<li key='metering-unit-sed'><span>计量单位2</span><b></b><p class="fill-data"></p></li>
+					<li key='quantity-sed'><span>数量2</span><b></b><p class="fill-data"></p></li>
+					<li key='metering-unit-group'><span>计量单位组合</span><b></b><p class="fill-data"></p></li>
+					<li key='supplier-code'><span>建议供应商编码</span><b></b><p class="fill-data"></p></li>
+					<li key='supplier'><span>建议供应商</span><b></b><p class="fill-data"></p></li>
+					<li key='retail-price'><span>零售价</span><b></b><p class="fill-data"></p></li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="content_box">
+			<div class="content_list">
+				<ul class="content"></ul>
+			</div>
+			<div class="add">
+				<img class="add_img" src="images/add.png" alt="">
+				<span class="add_name">点击添加</span>
+			</div>
+		</div>
+		<div class="save-all"><img src="images/save.png" alt=""></div>
+	</div>
+
+
+	<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+	<script type="text/javascript" src="my-drag.js"></script>
+	<script type="text/javascript">
+		$(function () {
+			//出入允许拖拽节点的父容器，一般是ul外层的容器
+			drag.init('container');
+
+		});
+		//拖拽
+		var drag = {
+
+			class_name: null, //允许放置的容器
+			permitDrag: false, //是否允许移动标识
+
+			_x: 0, //节点x坐标
+			_y: 0, //节点y坐标
+			_left: 0, //光标与节点坐标的距离
+			_top: 0, //光标与节点坐标的距离
+
+			old_elm: null, //拖拽原节点
+			tmp_elm: null, //跟随光标移动的临时节点
+			new_elm: null, //拖拽完成后添加的新节点
+
+			//初始化
+			init: function (className) {
+
+				//允许拖拽节点的父容器的classname(可按照需要，修改为id或其他)
+				drag.class_name = className;
+
+				//监听鼠标按下事件，动态绑定要拖拽的节点（因为节点可能是动态添加的）
+				$('.' + drag.class_name).on('mousedown', 'ul.tab_classify li', function (event) {
+					// event.stopPropagation();
+					//当在允许拖拽的节点上监听到点击事件，将标识设置为可以拖拽
+					drag.permitDrag = true;
+					//获取到拖拽的原节点对象
+					drag.old_elm = $(this);
+					//执行开始拖拽的操作
+					drag.mousedown(event);
+					return false;
+				});
+
+				//监听鼠标移动
+				$(document).mousemove(function (event) {
+					//判断拖拽标识是否为允许，否则不进行操作
+					if (!drag.permitDrag) return false;
+					//执行移动的操作
+					drag.mousemove(event);
+					return false;
+				});
+
+				//监听鼠标放开
+				$(document).mouseup(function (event) {
+					//判断拖拽标识是否为允许，否则不进行操作
+					if (!drag.permitDrag) return false;
+					//拖拽结束后恢复标识到初始状态
+					drag.permitDrag = false;
+					//执行拖拽结束后的操作
+					drag.mouseup(event);
+					return false;
+				});
+
+			},
+
+			//按下鼠标 执行的操作
+			mousedown: function (event) {
+				// event.stopPropagation();
+				//1.克隆临时节点，跟随鼠标进行移动
+				drag.tmp_elm = $(drag.old_elm).clone();
+
+				//2.计算 节点 和 光标 的坐标
+				drag._x = $(drag.old_elm).offset().left;
+				drag._y = $(drag.old_elm).offset().top;
+
+				var e = event || window.event;
+				drag._left = e.pageX - drag._x;
+				drag._top = e.pageY - drag._y;
+
+				//3.修改克隆节点的坐标，实现跟随鼠标进行移动的效果
+				$(drag.tmp_elm).css({
+					'position': 'absolute',
+					'background-color': '#f8f8f8',
+					'left': drag._x,
+					'top': drag._y,
+				});
+
+				//4.添加临时节点
+				tmp = $(drag.old_elm).parent().append(drag.tmp_elm);
+				drag.tmp_elm = $(tmp).find(drag.tmp_elm);
+				$(drag.tmp_elm).css('cursor', 'move');
+
+			},
+
+			//移动鼠标 执行的操作
+			mousemove: function (event) {
+				// event.stopPropagation();
+				//2.计算坐标
+				var e = event || window.event;
+				var x = e.pageX - drag._left;
+				var y = e.pageY - drag._top;
+				var maxL = $(document).width() - $(drag.old_elm).outerWidth();
+				var maxT = $(document).height() - $(drag.old_elm).outerHeight();
+				//不允许超出浏览器范围
+				x = x < 0 ? 0 : x;
+				x = x > maxL ? maxL : x;
+				y = y < 0 ? 0 : y;
+				y = y > maxT ? maxT : y;
+
+				//3.修改克隆节点的坐标
+				$(drag.tmp_elm).css({
+					'left': x,
+					'top': y,
+				});
+
+				//判断当前容器是否允许放置节点
+				$.each($('.' + drag.class_name + ' ul'), function (index, value) {
+
+					//获取容器的坐标范围 (区域)
+					var box_x = $(value).offset().left; //容器左上角x坐标
+					var box_y = $(value).offset().top; //容器左上角y坐标
+					var box_width = $(value).outerWidth(); //容器宽
+					var box_height = $(value).outerHeight(); //容器高
+
+					//给可以放置的容器加背景色
+					if (e.pageX > box_x && e.pageX < box_x - 0 + box_width && e.pageY > box_y && e.pageY < box_y - 0 + box_height) {
+
+						//判断是否不在原来的容器下（使用坐标进行判断：x、y任意一个坐标不等于原坐标，则表示不是原来的容器）
+						if ($(value).offset().left !== drag.old_elm.parent().offset().left ||
+							$(value).offset().top !== drag.old_elm.parent().offset().top) {
+
+							$(value).css('background-color', '#fcfcfc');
+						}
+					} else {
+						//恢复容器原背景色
+						$(value).css('background-color', '#f8f8f8');
+					}
+
+				});
+
+			},
+
+			//放开鼠标 执行的操作
+			mouseup: function (event) {
+				// event.stopPropagation();
+				//移除临时节点
+				$(drag.tmp_elm).remove();
+
+				//判断所在区域是否允许放置节点
+				var e = event || window.event;
+
+				$.each($('.' + drag.class_name + ' ul.content'), function (index, value) {
+					//获取容器的坐标范围 (区域)
+					var box_x = $(value).offset().left; //容器左上角x坐标
+					var box_y = $(value).offset().top; //容器左上角y坐标
+					var box_width = $(value).outerWidth(); //容器宽
+					var box_height = $(value).outerHeight(); //容器高
+					console.dir('box_x: '+box_x + ', box_y: ' + box_y + ', box_width: ' + box_width + ', box_height: ' + box_height);
+					//判断放开鼠标位置是否想允许放置的容器范围内
+					if (e.pageX > box_x && e.pageX < box_x - 0 + box_width && e.pageY > box_y && e.pageY < box_y - 0 + box_height) {
+
+						//判断是否不在原来的容器下（使用坐标进行判断：x、y任意一个坐标不等于原坐标，则表示不是原来的容器）
+						if ($(value).offset().left !== drag.old_elm.parent().offset().left ||
+							$(value).offset().top !== drag.old_elm.parent().offset().top) {
+							//向目标容器添加节点并删除原节点
+							tmp = $(drag.old_elm).clone();
+							var newObj = $(value).append(tmp);
+							// $(drag.old_elm).remove();
+							//获取新添加节点的对象
+							drag.new_elm = $(newObj).find(tmp);
+							
+							
+			/* -------------// ********************* -----------------------------*/
+			
+							// 追加：号，以及拖拽的时候的数据
+							if (drag.new_elm.children('span').length) {
+								drag.new_elm.children('span').html(drag.new_elm.children('span').html() + ':')
+								// drag.new_elm.append('<span>lily123</span>');
+							}
+							
+							// 鼠标移动到文字上面添加删除按钮
+							$("ul.content li").mouseover(function () {
+								if($(this).children('b')) {
+									$(this).children('b').addClass('close_name');
+								}
+								$(this).css("background-color", "#f8f8f8");
+							});
+							
+							$("ul.content li").mouseout(function () {
+								if($(this).children('b')) {
+									$(this).children('b').removeClass('close_name');
+								}
+								$(this).css("background-color", "#fff");
+							});
+						}
+					}
+					// 恢复容器原背景色
+					$(value).css('background-color', '#f8f8f8');
+				});
+
+			},
+
+		};
+		
+	</script>
+
+</body>
+
+</html>
