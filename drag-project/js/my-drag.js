@@ -1,7 +1,7 @@
 $(function () {
 	window.onload = function () {
 		$.ajax({
-			url: "data.js",
+			url: "js/data.js",
 			type: "get",
 			data: {},
 			dataType: "json",
