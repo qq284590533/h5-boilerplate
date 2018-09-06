@@ -1,0 +1,272 @@
+body {
+	width: 100%;
+	height: 662px;
+	overflow: hidden;
+}
+
+.container {
+	width: 100%;
+	height: 100%;
+}
+
+.tab_left {
+	width: 20%;
+	min-width: 200px;
+	float: left;
+	overflow: auto;
+	height: 100%;
+}
+
+ul li {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	/* color: #f8f8f8; */
+}
+
+.tab_list ul li table {
+	display: none;
+}
+
+.tab_list .table_list_name {
+	padding: 0;
+	padding-left: 20px;
+	margin: 0;
+	background: url(../images/more_list.png) no-repeat;
+	background-size: 18px 18px;
+	background-position: -2px 3px;
+}
+
+.tab_list .table_name_right {
+	background: url(../images/shrink_list.png) no-repeat;
+	background-size: 18px 18px;
+	background-position: -2px 3px;
+}
+
+
+
+
+
+/* 填充的部分样式 */
+
+.content_box {
+	width: 75%;
+	border: 1px solid #999;
+	margin-left: 21%;
+	padding: 10px;
+	padding-top: 20px;
+	margin-top: 20px;
+}
+
+.content_box .add {
+	margin-top: 30px;
+}
+
+.content_box .add_img {
+	width: 38px;
+	display: block;
+	margin: 0 auto;
+}
+
+.content_box .add_name {
+	display: block;
+	text-align: center;
+	color: #999;
+}
+
+.content_box .content {
+	display: flex;
+	flex-direction: row;
+	border: 1px solid #ccc;
+	border-top: none;
+}
+
+.content_box .content:nth-child(1) {
+	border-top: 1px solid #ccc;
+}
+
+.content {
+	background: #f8f8f8;
+	padding: 0;
+	margin: 0;
+	min-height: 40px;
+}
+
+.content_list .content li {
+	display: inline-block;
+	/* min-width: 200px; */
+	line-height: 40px;
+	flex: 1;
+	display: flex;
+	border-left: 1px dashed #ccc;
+	text-align: center;
+	position: relative;
+}
+
+.content_list .content li span {
+	flex: 0 0 50%;
+}
+.content_list .content li .description{
+	display: block;
+}
+.content_list .content li p {
+	margin: 0;
+	flex: 1;
+	border-left: 1px dashed #aaa;
+}
+
+.content_list .content li:nth-child(1) {
+	border-left: none;
+}
+
+.content_list .content li b.close_name {
+	position: absolute;
+	background: #f6f6f6;
+	background: url(../images/close.png) no-repeat;
+	background-size: 13px 13px;
+	background-position: 3px 3px;
+	border-radius: 10px;
+	width: 18px;
+	height: 18px;
+	top: 0;
+	right: 0;
+}
+/* 删除按钮 */
+.content_list .content b img {
+	width: 12px;
+}
+
+.tab_classify {
+	display: none;
+}
+
+.tab_left .tab_list:nth-child(1) .tab_classify {
+	display: block;
+}
+
+.tab_classify li input{
+	display: none;
+}
+.tab_classify li p.fill-data{
+	display: none;
+}
+.tab_classify .table_name {
+	padding: 0;
+	padding-left: 20px;
+	margin: 0;
+	background: url(../images/more_list.png) no-repeat;
+	background-size: 18px 18px;
+	background-position: -2px 3px;
+}
+
+.tab_classify .table_name_right {
+	background: url(../images/shrink_list.png) no-repeat;
+	background-size: 18px 18px;
+	background-position: -2px 3px;
+}
+.content_list .content li.input_box span{
+	flex: 0 0 15%;
+}
+
+.content_list .input_box input{
+	flex: 1;
+    display: block;
+    margin: 2px;
+}
+.content_list .content li h2{
+	margin: 0;
+	text-align: center;
+	width: 100%;
+	display: none;
+}
+.content_list .content li label.description{
+	display: none;
+	width: 100%;
+	text-align: right;
+	color: #f00;
+	font-size: 14px;
+}
+.content_list .input_box span{
+	display: none;
+}
+.content_list .input_box p {
+		display: none;
+}
+
+
+/* 表格列表 */
+
+.content_list .table {
+	width: 100%;
+}
+
+.content_list .table-grid {
+	width: 100%;
+}
+
+.content .table_list {
+	display: none !important;
+}
+
+.content .table_name {
+	display: none;
+}
+
+.table_list {
+	padding-left: 30px;
+}
+
+.content .table_list {
+	padding-left: 0;
+}
+
+.table table {
+	border-collapse: collapse;
+}
+
+
+
+
+
+
+
+
+
+/* 表格 */
+
+.table table tr {
+	line-height: 40px;
+}
+
+.table table tr td {
+	border: none;
+	border: 1px solid #999;
+}
+
+.table_list p {
+	background: url(../images/no-selected.png) no-repeat;
+	background-size: 15px 15px;
+	padding-left: 25px;
+	background-position: 4px 3px;
+}
+
+.table_list .selected {
+	background: url(../images/selected.png) no-repeat;
+	background-size: 15px 15px;
+	padding-left: 25px;
+	background-position: 4px 3px;
+}
+
+
+/* 按钮保存 */
+
+.save-all {
+	margin-left: 22%;
+}
+
+.save-all img {
+	display: block;
+	margin: 0 auto;
+	margin-top: 40px;
+	width: 180px;
+}
