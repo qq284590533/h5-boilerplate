@@ -59,6 +59,10 @@ function Layout(layoutData) {
 		w: null,
 		h: null
 	}
+	this.spanBoxStyle = {
+		w: null,
+		h: null
+	}
 	this.pos = {
 		start: null,
 		end: null
@@ -126,7 +130,7 @@ function imgChange(layout) {
 	eventbox.className = 'eventbox';
 	setAttr(eventbox, 'data-handleName', 'addEventBox');
 	layout.setRespondEventElement(eventbox);
-	layout.bindEvent(eventbox, 'mousedown', onMouseDown);
+	layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
 
 	closebtn.innerHTML = '×';
 	closebtn.className = 'close';
@@ -174,16 +178,18 @@ Layout.prototype.setRespondEventElement = function (element) {
 // e.button==0鼠标左键
 // e.button==1鼠标滚轮键
 // e.button==2鼠标右键
-function onMouseDown(layout, e) {
+Layout.prototype.onMouseDown = function(layout, e) {
 	var hasEvent = e.target.getAttribute('data-hasEvent');
 	if (!hasEvent || e.button != 0) return;
 	// console.log('按下')
 	layout.mouseHasDown = true;
 	layout.handleName = e.target.getAttribute('data-handleName');
-	if (e.target.id) {
-		layout.eventBox = e.target.parentNode;
-	} else {
+	if (e.target.nodeName == 'DIV') {
 		layout.eventBox = e.target
+	} else if (e.target.nodeName == 'SPAN') {
+		layout.eventBox = e.target.parentNode
+	} else {
+		layout.eventBox = e.target.parentNode.parentNode;
 	}
 	var eventHandleBox = createEle('div');
 	eventHandleBox.className = 'handle-box';
@@ -194,6 +200,7 @@ function onMouseDown(layout, e) {
 	eventHandleBox.style.zIndex = 9999;
 	layout.eventHandleBox = eventHandleBox;
 	layout.eventBox.appendChild(eventHandleBox);
+
 	layout.bindEvent(eventHandleBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(eventHandleBox, 'mouseup', layout.onMouseUp);
 	switch (layout.handleName) {
@@ -202,6 +209,9 @@ function onMouseDown(layout, e) {
 			break;
 		case 'moveEventBox':
 			moveEventBox_mousedown(layout, e);
+			break;
+		case 'resizeEventBox':
+			resizeEventBox_mousedown(layout, e);
 			break;
 		default:
 			break;
@@ -219,6 +229,9 @@ Layout.prototype.onMouseMove = function (layout, e) {
 		case 'moveEventBox':
 			moveEventBox_mousemove(layout, e);
 			break;
+		case 'resizeEventBox':
+			resizeEventBox_mousemove(layout, e);
+			break;
 		default:
 			break;
 	}
@@ -235,6 +248,9 @@ Layout.prototype.onMouseUp = function (layout, e) {
 		case 'moveEventBox':
 			moveEventBox_mouseup(layout, e);
 			break;
+		case 'resizeEventBox':
+			resizeEventBox_mouseup(layout, e);
+			break;
 		default:
 			break;
 	}
@@ -250,7 +266,7 @@ function getEleStyle(layout, element) {
 function addEventBox_mousedown(layout, e) {
 	getPos(layout, e);
 	getEleStyle(layout, e.target)
-	var span = document.createElement('span');
+	var span = createEle('span');
 	var left = layout.pos.start.x / layout.boxStyle.w * 100 + '%'
 	var top = layout.pos.start.y / layout.boxStyle.h * 100 + '%'
 	span.style.left = left;
@@ -262,9 +278,21 @@ function addEventBox_mousedown(layout, e) {
 	layout.eventBox.appendChild(span);
 	layout.spanBox = span;
 	addCloseBtn(layout, span);
+
+	var resizeBtn = createEle('i');
+	resizeBtn.className = 'resize';
+	layout.setRespondEventElement(resizeBtn);
+	setAttr(resizeBtn, 'data-handleName', 'resizeEventBox');
+	span.appendChild(resizeBtn);
+
+	layout.bindEvent(resizeBtn, 'mousedown', layout.onMouseDown);
+	layout.bindEvent(resizeBtn, 'mousemove', layout.onMouseMove);
+	layout.bindEvent(resizeBtn, 'mouseup', layout.onMouseUp);
+
 	layout.bindEvent(layout.spanBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(layout.spanBox, 'mouseup', layout.onMouseUp);
 	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
+
 	layout.bindEvent(layout.spanBox, 'mouseover', mouseover);
 	layout.bindEvent(layout.spanBox, 'mouseout', mouseout);
 }
@@ -335,6 +363,48 @@ function moveEventBox_mouseup(layout, e) {
 	addEventBox_mouseup(layout, e)
 	layout.spanBoxPos = null;
 }
+
+function resizeEventBox_mousedown(layout, e) {
+	e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+	e.stopPropagation();
+	getPos(layout, e);
+	getEleStyle(layout, layout.eventBox);
+	layout.spanBox = e.target.parentNode;
+	var spanboxstyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.spanBoxStyle.w = parseFloat(spanboxstyle.width);
+	layout.spanBoxStyle.h = parseFloat(spanboxstyle.height);
+}
+
+function resizeEventBox_mousemove(layout, e) {
+	getPos(layout, e);
+	var w = layout.spanBoxStyle.w + (layout.pos.end.x - layout.pos.start.x);
+	var h = layout.spanBoxStyle.h + (layout.pos.end.y - layout.pos.start.y);
+	w = w / layout.boxStyle.w;
+	h = h / layout.boxStyle.h;
+	layout.spanBox.style.width = w * 100 + '%';
+	layout.spanBox.style.height = h * 100 + '%';
+}
+
+function resizeEventBox_mouseup(layout, e) {
+	layout.pos = {
+		start: null,
+		end: null
+	};
+	layout.boxStyle = {
+		w: null,
+		h: null
+	}
+	layout.spanBoxStyle = {
+		w: null,
+		h: null
+	}
+	layout.spanBox = null;
+	layout.mouseHasDown = false;
+	layout.handleName = null;
+	layout.eventHandleBox.remove();
+	layout.eventHandleBox = null;
+}
+
 
 //鼠标移动到span事件
 function mouseover(layout, e) {
