@@ -26,7 +26,6 @@ function addCloseBtn(layout, span) {
 	i.className = 'close';
 	i.addEventListener('click', function () {
 		span.remove();
-		// console.log(layout.layoutData)
 	})
 	span.appendChild(i);
 }
@@ -46,14 +45,15 @@ function getPos(layout, e) {
 	}
 }
 
-function Layout(layoutData) {
+function Layout() {
 	this.elements = {
 		layout: ele('layout'),
 		selectImage: ele('selectImage'),
 		addImg: ele('addImg'),
-		changeImage: ele('changeImage')
+		changeImage: ele('changeImage'),
+		selectHtml: ele('selectHtml'),
+		importHtml: ele('importHtml')
 	};
-	this.layoutData = {};
 	this.steps = {};
 	this.boxStyle = {
 		w: null,
@@ -82,7 +82,11 @@ Layout.prototype.init = function () {
 	this.elements.addImg.addEventListener('click', function () {
 		_this.elements.selectImage.click();
 	})
+	this.elements.importHtml.addEventListener('click', function () {
+		_this.elements.selectHtml.click();
+	})
 	this.bindEvent(this.elements.selectImage, 'change', imgChange);
+	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
 	this.bindEvent(this.elements.changeImage, 'change', editImg);
 	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
 }
@@ -121,8 +125,6 @@ function imgChange(layout) {
 		ctx.drawImage(img, 0, 0, img.width, img.height);
 		var dataURL = canvas.toDataURL(type);
 		img.src = dataURL;
-		layout.layoutData[id] = div;
-		// console.log(layout.layoutData);
 		img.onload = null;
 		layout.elements.selectImage.value = null;
 	}
@@ -137,7 +139,6 @@ function imgChange(layout) {
 
 	closebtn.addEventListener('click', function () {
 		ele(id).remove();
-		deleteData(id, layout.layoutData);
 	})
 
 	editbtn.innerHTML = '／';
@@ -150,6 +151,70 @@ function imgChange(layout) {
 	layout.elements.layout.appendChild(div);
 }
 
+//选择HTML文件
+function htmlChange(layout) {
+	var iframe = document.createElement('iframe');
+	var file = layout.elements.selectHtml.files.item(0),
+		url = window.URL.createObjectURL(file);
+	iframe.style.display = 'none';
+	iframe.src = url;
+	console.log(layout.elements.layout)
+	if (iframe.attachEvent) {
+		iframe.attachEvent("onload", function () {
+			layout.elements.layout.innerHTML = iframe.contentWindow.document.getElementById('layout').innerHTML;
+			iframe.remove();
+			amendLayout(layout)
+		});
+	} else {
+		iframe.onload = function () {
+			layout.elements.layout.innerHTML = iframe.contentWindow.document.getElementById('layout').innerHTML;
+			iframe.remove();
+			amendLayout(layout)
+		};
+	}
+	document.body.appendChild(iframe);
+	layout.elements.selectHtml.value = null;
+}
+
+//修改，初始化
+function amendLayout(layout) {
+	var eventboxs = layout.elements.layout.querySelectorAll('.eventbox');
+	eventboxs.forEach(function (eventbox) {
+		return (function (eventbox){
+			layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
+		})(eventbox)
+	});
+
+	var blocks = layout.elements.layout.querySelectorAll('.block');
+	blocks.forEach(function (block) {
+		var close = block.querySelector('.close');
+		var edit = block.querySelector('.edit');
+		var id = block.id;
+		close.addEventListener('click', function () {
+			ele(id).remove();
+		})
+		edit.addEventListener('click', function () {
+			layout.img = ele(id).querySelector('img');
+			layout.elements.changeImage.click();
+		})
+	})
+
+	var spans = layout.elements.layout.querySelectorAll('span');
+	spans.forEach(function (span){
+		layout.bindEvent(span, 'mousemove', layout.onMouseMove);
+		layout.bindEvent(span, 'mouseup', layout.onMouseUp);
+		layout.bindEvent(span, 'contextmenu', contextmenu);
+		layout.bindEvent(span, 'mouseover', mouseover);
+		layout.bindEvent(span, 'mouseout', mouseout);
+		var close = span.querySelector('.close');
+		close.addEventListener('click', function () {
+			span.remove();
+		})
+	})
+
+}
+
+//修改图片
 function editImg(layout) {
 	var file = layout.elements.changeImage.files.item(0),
 		url = window.URL.createObjectURL(file),
@@ -178,7 +243,7 @@ Layout.prototype.setRespondEventElement = function (element) {
 // e.button==0鼠标左键
 // e.button==1鼠标滚轮键
 // e.button==2鼠标右键
-Layout.prototype.onMouseDown = function(layout, e) {
+Layout.prototype.onMouseDown = function (layout, e) {
 	var hasEvent = e.target.getAttribute('data-hasEvent');
 	if (!hasEvent || e.button != 0) return;
 	// console.log('按下')
@@ -285,10 +350,6 @@ function addEventBox_mousedown(layout, e) {
 	setAttr(resizeBtn, 'data-handleName', 'resizeEventBox');
 	span.appendChild(resizeBtn);
 
-	layout.bindEvent(resizeBtn, 'mousedown', layout.onMouseDown);
-	layout.bindEvent(resizeBtn, 'mousemove', layout.onMouseMove);
-	layout.bindEvent(resizeBtn, 'mouseup', layout.onMouseUp);
-
 	layout.bindEvent(layout.spanBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(layout.spanBox, 'mouseup', layout.onMouseUp);
 	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
@@ -318,7 +379,6 @@ function addEventBox_mouseup(layout, e) {
 	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
 	if (parseFloat(spanBoxStyle.width) < 10 || parseFloat(spanBoxStyle.height) < 10) {
 		layout.spanBox.remove();
-		// console.log(layout.layoutData)
 	}
 	layout.boxStyle = {
 		w: null,

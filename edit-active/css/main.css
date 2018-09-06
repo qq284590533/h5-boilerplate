@@ -205,7 +205,7 @@ ul{
 	color: #186bff;;
 }
 
-#selectImage,#changeImage{
+#selectImage,#changeImage,#selectHtml{
 	width: 0;
 	height: 0;
 	display: none;
