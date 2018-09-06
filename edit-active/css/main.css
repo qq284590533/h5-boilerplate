@@ -101,7 +101,7 @@ ul{
 	z-index: 9999;
 }
 
-#layout i.close{
+#layout i{
 	position: absolute;
 	display: none;
 	cursor: pointer;
@@ -109,13 +109,23 @@ ul{
 	text-align: center;
 	width: 20px;
 	height: 20px;
-	left: 0;
-	top: 0;
-	line-height: 20px;
 	font-size: 18px;
 	color: #fff;
-	background: rgb(255, 125, 125);
+	line-height: 20px;
 	z-index: 10000;
+}
+
+#layout i.close{
+	left: 0;
+	top: 0;
+	background: rgb(255, 125, 125);
+}
+
+#layout i.edit{
+	font-size: 12px;
+	right: 0;
+	top: 0;
+	background: rgb(36, 112, 253);
 }
 
 #layout .eventbox{
@@ -133,18 +143,10 @@ ul{
 
 #layout .eventbox span i.close{
 	display: none;
-	font-style: normal;
-	width: 20px;
-	height: 20px;
-	position: absolute;
 	left: -10px;
 	top: -10px;
-	line-height: 20px;
 	border-radius: 50%;
-	text-align: center;
 	font-size: 12px;
-	color: #fff;
-	background:rgb(255, 125, 125);
 }
 
 #layout .eventbox span i.close:hover{
@@ -177,7 +179,15 @@ ul{
 	padding: 0 10px;
 }
 
-#selectImage{
+#eventName{
+    font-size: 16px;
+	margin-bottom: 10px;
+	line-height: 30px;
+	min-height: 30px;
+	color: #186bff;;
+}
+
+#selectImage,#changeImage{
 	width: 0;
 	height: 0;
 	display: none;
@@ -221,7 +231,7 @@ ul{
 }
 #eventMenu .container{
 	width: 300px;
-	height: 240px;
+	height: 220px;
 	border-radius: 5px;
 	background: #fff;
 	box-shadow: 5px 5px 5px #666;
@@ -261,35 +271,17 @@ ul{
 	margin: 0 20px;
 }
 
-#eventMenu .body select,#eventMenu .body input{
-	display: inline-block;
-	width: 100px;
-	height: 30px;
-	line-height: 30px;
-	border: 1px solid #999;
-	border-radius: 4px;
-	padding: 0 5px;
-	text-align: center;
-	color: #666;
+#eventMenu .select2-container{
+	margin-bottom: 10px;
 }
 
-#eventMenu .body .select-box{
-	margin-bottom: 10px;
+.select2-container{
+	font-size: 12px;
 }
 
 #eventMenu .body #subList{
 	display: none;
 }
-#searchBox {
-	display: none;
-}
-#eventName{
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-
 
 .progress{
     margin-top:2px;
@@ -320,4 +312,14 @@ ul{
     transition-property: width;
     transition-timing-function: ease;
     width: 266.188px;
+}
+
+.select2-results__option{
+	overflow: hidden;
+}
+
+.img-flag{
+    width: 60px;
+	padding-right: 10px;
+	float: left;
 }

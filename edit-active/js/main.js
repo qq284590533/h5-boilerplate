@@ -50,7 +50,8 @@ function Layout(layoutData) {
 	this.elements = {
 		layout: ele('layout'),
 		selectImage: ele('selectImage'),
-		addImg: ele('addImg')
+		addImg: ele('addImg'),
+		changeImage: ele('changeImage')
 	};
 	this.layoutData = {};
 	this.steps = {};
@@ -62,10 +63,11 @@ function Layout(layoutData) {
 		start: null,
 		end: null
 	};
+	this.img = null;
 	this.eventBox = null;
 	this.handleName = null;
 	this.mouseHasDown = false;
-	this.spanBox = null;	//当前操作的spanBox
+	this.spanBox = null; //当前操作的spanBox
 	this.spanBoxPos = null;
 
 	this.init()
@@ -76,8 +78,9 @@ Layout.prototype.init = function () {
 	this.elements.addImg.addEventListener('click', function () {
 		_this.elements.selectImage.click();
 	})
-	this.bindEvent(this.elements.selectImage, 'change', imgChange)
-	this.bindEvent(document.body, 'mouseup', this.onMouseUp)
+	this.bindEvent(this.elements.selectImage, 'change', imgChange);
+	this.bindEvent(this.elements.changeImage, 'change', editImg);
+	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
 }
 
 //绑定事件
@@ -97,10 +100,12 @@ function imgChange(layout) {
 		img = createEle('img'),
 		eventbox = createEle('div'),
 		closebtn = createEle('i');
+	editbtn = createEle('i');
 	div.id = id;
 	div.className = 'block';
 	div.appendChild(img);
 	div.appendChild(closebtn);
+	div.appendChild(editbtn);
 	div.appendChild(eventbox);
 
 	img.src = url;
@@ -130,7 +135,34 @@ function imgChange(layout) {
 		ele(id).remove();
 		deleteData(id, layout.layoutData);
 	})
+
+	editbtn.innerHTML = '／';
+	editbtn.className = 'edit'
+	editbtn.addEventListener('click', function () {
+		layout.img = ele(id).querySelector('img');
+		layout.elements.changeImage.click();
+	})
+
 	layout.elements.layout.appendChild(div);
+}
+
+function editImg(layout) {
+	var file = layout.elements.changeImage.files.item(0),
+		url = window.URL.createObjectURL(file),
+		type = file.type,
+		img = layout.img;
+	img.src = url;
+	img.onload = function () {
+		var canvas = document.createElement("canvas");
+		canvas.width = img.width;
+		canvas.height = img.height;
+		var ctx = canvas.getContext("2d");
+		ctx.drawImage(img, 0, 0, img.width, img.height);
+		var dataURL = canvas.toDataURL(type);
+		img.src = dataURL;
+		img.onload = null;
+		layout.elements.changeImage.value = null;
+	}
 }
 
 //设置data-hasEvent属性，有这个属性的元素才能够响应定义的事件。
@@ -143,15 +175,14 @@ Layout.prototype.setRespondEventElement = function (element) {
 // e.button==1鼠标滚轮键
 // e.button==2鼠标右键
 function onMouseDown(layout, e) {
-	console.log(e)
 	var hasEvent = e.target.getAttribute('data-hasEvent');
-	if (!hasEvent||e.button!=0) return;
+	if (!hasEvent || e.button != 0) return;
 	// console.log('按下')
 	layout.mouseHasDown = true;
 	layout.handleName = e.target.getAttribute('data-handleName');
-	if(e.target.id){
+	if (e.target.id) {
 		layout.eventBox = e.target.parentNode;
-	}else{
+	} else {
 		layout.eventBox = e.target
 	}
 	var eventHandleBox = createEle('div');
@@ -209,7 +240,7 @@ Layout.prototype.onMouseUp = function (layout, e) {
 	}
 }
 
-function getEleStyle(layout, element){
+function getEleStyle(layout, element) {
 	var boxStyle = element.currentStyle ? element.currentStyle : window.getComputedStyle(element, null);
 	layout.boxStyle.w = parseInt(boxStyle.width);
 	layout.boxStyle.h = parseInt(boxStyle.height);
@@ -233,6 +264,9 @@ function addEventBox_mousedown(layout, e) {
 	addCloseBtn(layout, span);
 	layout.bindEvent(layout.spanBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(layout.spanBox, 'mouseup', layout.onMouseUp);
+	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
+	layout.bindEvent(layout.spanBox, 'mouseover', mouseover);
+	layout.bindEvent(layout.spanBox, 'mouseout', mouseout);
 }
 
 //添加事件span时鼠标移动事件处理函数
@@ -258,10 +292,9 @@ function addEventBox_mouseup(layout, e) {
 		layout.spanBox.remove();
 		// console.log(layout.layoutData)
 	}
-	layout.bindEvent(layout.spanBox, 'contextmenu', contextmenu);
 	layout.boxStyle = {
 		w: null,
-		h: null	
+		h: null
 	}
 	layout.spanBox = null;
 	layout.mouseHasDown = false;
@@ -303,154 +336,134 @@ function moveEventBox_mouseup(layout, e) {
 	layout.spanBoxPos = null;
 }
 
-function contextmenu(layout, e){
-	e.preventDefault ? e.preventDefault() : (e.returnValue = false);
-	e.stopPropagation();
-	menu.init(e.target);
-}
-var menu = new Menu('eventMenu');
-function Menu (id){
-	this.contBox = ele(id);
-	this.searchBox = document.getElementById('searchBox');
-	this.ipt = document.getElementById('keyword');
-	this.ok =  document.getElementById('ok');
-	this.cancel = document.getElementById('cancel');
-	this.eventList = document.querySelector('#eventList')
-	this.subList = document.querySelector('#subList')
-	this.param1 = null;
-	this.param2 = null;
-	this.eventName = document.getElementById('eventName');
-	this.param1Text = '';
-	this.param2Text = '';
+//鼠标移动到span事件
+function mouseover(layout, e) {
+	var eventname = document.getElementById('eventName');
+	var text1 = e.target.getAttribute('data-eventname1');
+	var text2 = e.target.getAttribute('data-eventname2');
+	if (text1) {
+		eventname.innerHTML = text1
+		if (text2) {
+			eventname.innerHTML += ' → ' + text2;
+		}
+	}
 }
 
-Menu.prototype.init = function (span) {
-	this.span = span;
+//鼠标移出span事件
+function mouseout(layout, e) {
+	var eventname = document.getElementById('eventName');
+	eventname.innerHTML = ''
+}
+
+function contextmenu(layout, e) {
+	e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+	e.stopPropagation();
+	menu.open(e.target);
+}
+var menu = new Menu('eventMenu');
+
+function Menu(id) {
+	this.contBox = ele(id);
+	this.ok = ele('ok');
+	this.cancel = ele('cancel');
+	this.body = this.contBox.querySelector('.body');
+	this.eventName = document.getElementById('eventName');
+	this.btnEvent = function () {
+		var _this = this;
+		this.cancel.addEventListener('click', function () {
+			_this.close();
+		});
+		this.ok.addEventListener('click', function () {
+			_this.data1 = _this.selectGroup.s1.select2('data');
+			// console.log(_this.data1)
+			if (_this.selectGroup.s2Id) {
+				_this.data2 = _this.selectGroup.s2.select2('data');
+				if (_this.data2[0].text != '') {
+					_this.data2[0].name = _this.data2[0].text;
+				}
+				// console.log(_this.data2)
+			} else {
+				_this.data2 = null;
+			}
+			if (_this.data1[0].id != '0') {
+				setAttr(_this.span, 'data-eventid1', _this.data1[0].id);
+				setAttr(_this.span, 'data-eventname1', _this.data1[0].text)
+			} else {
+				_this.span.removeAttribute('data-eventid1')
+				_this.span.removeAttribute('data-eventname1')
+			}
+			if (_this.data2 && _this.data2[0].id) {
+				setAttr(_this.span, 'data-eventid2', _this.data2[0].id);
+				setAttr(_this.span, 'data-eventname2', _this.data2[0].name);
+			} else {
+				_this.span.removeAttribute('data-eventid2')
+				_this.span.removeAttribute('data-eventname2')
+			}
+			// console.log(_this.data1, _this.data2);
+			_this.close();
+		})
+	}
+	this.btnEvent()
+}
+
+Menu.prototype.close = function () {
+	this.selectGroup.destroy();
+	this.contBox.style.display = 'none';
+}
+
+Menu.prototype.open = function (span) {
 	var _this = this;
-	this.param1 = this.span.getAttribute('data-param1');
-	this.param2 = this.span.getAttribute('data-param2');
-	if(this.param1){
-		this.eventList.value = this.param1;
-		getParam(this.param1,'',this.param2);
+	var val = null;
+	this.eventid1 = span.getAttribute('data-eventid1');
+	this.eventname1 = span.getAttribute('data-eventname1');
+	this.eventid2 = span.getAttribute('data-eventid2');
+	this.eventname2 = span.getAttribute('data-eventname2');
+	if (this.eventid1) {
+		val = {
+			data1: {
+				id: _this.eventid1,
+				text: _this.eventname1
+			}
+		}
+		if (_this.eventid2) {
+			val['data2'] = {
+				id: _this.eventid2,
+				name: _this.eventname2
+			}
+		}
 	}
-	if(this.param2){
-		this.subList.value = this.param2;
-	}
-	this.eventName.innerHTML = this.span.getAttribute('data-eventName');
-	this.cancel.addEventListener('click',function (){
-		_this.close();
-	})
-	this.ok.addEventListener('click',function (){
-		_this.setEvent(_this.span);
-		_this.close();
-	})
-	this.eventList.addEventListener('change', function (){
-		_this.param1 = _this.eventList.value;
-		_this.searchBox.querySelector('input').value = '';
-		_this.param1Text = _this.eventList.querySelector('option[value=\''+_this.param1+'\']').innerHTML;
-		_this.eventName.innerHTML = _this.param1Text;
-		getParam(_this.param1)
-	})
-	this.subList.addEventListener('change', function (){
-		_this.param2 = _this.subList.value;
-		_this.param1Text = _this.eventList.querySelector('option[value=\''+_this.param1+'\']').innerHTML;
-		_this.param2Text = _this.subList.querySelector('option[value=\''+_this.param2+'\']').innerHTML;
-		_this.eventName.innerHTML = _this.param1Text+' → '+_this.param2Text;
-	})
+	// console.log(val)
+	this.selectGroup = new SelectGroup(this.body, val);
+	this.span = span;
 	this.contBox.style.display = 'flex';
 	this.contBox.style.display = '-webkit-flex';
 }
 
-Menu.prototype.setEvent = function () {
-	if(this.param1){
-		setAttr(this.span, 'data-param1', this.param1)
-	}else{
-		this.span.removeAttribute('data-param1')
-	}
-	if(this.param2){
-		setAttr(this.span, 'data-param2', this.param2)
-	}else{
-		this.span.removeAttribute('data-param2')
-	}
-	setAttr(this.span, 'data-eventName', this.eventName.innerHTML)
-	setAttr(this.span, 'title', this.eventName.innerHTML)
-}
-Menu.prototype.close = function () {
-	this.contBox.style.display = 'none';
-	this.clearValue();
-}
-
-Menu.prototype.clearValue = function () {
-	this.ipt.value = '';
-	this.searchBox.style.display = 'none';
-	this.eventList.value = '000'
-	this.subList.innerHTML = '';
-	this.subList.style.display = 'none';
-}
-
-
-function createSelect(list, select) {
-	for (var i in list) {
-		var option = document.createElement('option');
-		option.value = list[i].id;
-		option.innerHTML = list[i].text;
-		select.appendChild(option);
-	}
-}
-
-function selectChange(_this) {
-	document.getElementById('searchBox').querySelector('input').value = '';
-	// document.getElementById('eventName').innerHTML;
-	// console.log(_this.text)
-	getParam(_this.value)
-}
-
-function createSubSelect(list, select, value) {
-	for (var i in list) {
-		var option = document.createElement('option');
-		option.value = list[i].id;
-		option.innerHTML = list[i].name;
-		select.appendChild(option);
-	}
-	if(value){
-		select.value = value;
-	}
-}
-
-function search() {
-	var id = document.getElementById('eventList').value;
-	var q = document.getElementById('keyword').value;
-	getParam(id, q);
-}
-
-
 function createHtml() {
 	var name = document.getElementById('fileName').value;
-	name = trim(name,'g');
-	if(name==''){
+	name = trim(name, 'g');
+	if (name == '') {
 		alert('文件名不能为空！')
 		return
 	}
-	var filename = name+'.html'
+	var filename = name + '.html'
 	var htmlbody = document.getElementById('pageView').innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
 	funDownload(html, filename);
 }
 
-function trim(str,is_global)
-{
+function trim(str, is_global) {
 	var result;
-	result = str.replace(/(^\s+)|(\s+$)/g,"");
-	if(is_global.toLowerCase()=="g")
-	{
-		result = result.replace(/\s/g,"");
-	 }
+	result = str.replace(/(^\s+)|(\s+$)/g, "");
+	if (is_global.toLowerCase() == "g") {
+		result = result.replace(/\s/g, "");
+	}
 	return result;
 }
 
-var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>Document</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;}#layout i.close{position: absolute;display: none;cursor: pointer;font-style: normal;text-align: center;width: 20px;height: 20px;left: 0;top: 0;line-height: 20px;font-size: 18px;color: #fff;background: rgb(255, 125, 125);z-index: 10000;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}#layout .eventbox span i.close{display: none;font-style: normal;width: 20px;height: 20px;position: absolute;left: -10px;top: -10px;line-height: 20px;border-radius: 50%;text-align: center;font-size: 12px;color: #fff;background:rgb(255, 125, 125);}#layout .eventbox span i.close:hover{cursor: pointer;}</style></head><body>';
+var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>Document</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>';
 
-var htmlfoot = '<script>window.onload = function (){var spanList = document.querySelectorAll("span[data-hasevent]");spanList.forEach(function (item) {item.addEventListener("click", function(e){return (function(item){var param1 = item.getAttribute("data-param1");var param2 = item.getAttribute("data-param2");id = parseInt(param1);if(param2){id = parseInt(param1)+"/"+ parseInt(param2)}window.location.href = "tticarstorecall://" + id;})(item)})})}</script></body></html>'
+var htmlfoot = '<script>window.onload = function (){var spanList = document.querySelectorAll("span[data-hasevent]");spanList.forEach(function (item) {item.addEventListener("click", function(e){return (function(item){var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = parseInt(id1);if(id2){id = parseInt(id1)+"/"+ parseInt(id2)}window.location.href = "tticarstorecall://" + id;})(item)})})}</script></body></html>'
 
 // 下载文件方法
 function funDownload(content, filename) {
