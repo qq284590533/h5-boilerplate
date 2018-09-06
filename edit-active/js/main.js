@@ -158,7 +158,6 @@ function htmlChange(layout) {
 		url = window.URL.createObjectURL(file);
 	iframe.style.display = 'none';
 	iframe.src = url;
-	console.log(layout.elements.layout)
 	if (iframe.attachEvent) {
 		iframe.attachEvent("onload", function () {
 			layout.elements.layout.innerHTML = iframe.contentWindow.document.getElementById('layout').innerHTML;
