@@ -9,9 +9,9 @@ variables:
 before_script:
   - ossutil config -e $ALIYUN_OSS_ENDPOINT -i $ALIYUN_OSS_KEYID -k $ALIYUN_OSS_KEYSECRET
 
-release-edit-active:
+release-drag-project:
   variables:
-    ALIYUN_OSS_PREFIX: "edit-active"
+    ALIYUN_OSS_PREFIX: "drag-project"
   script:
     - rm -rf .git .gitlab-ci.yml
     - ossutil cp -ru $ALIYUN_OSS_PREFIX/ oss://$ALIYUN_OSS_BUCKETNAME/$ALIYUN_OSS_PREFIX
