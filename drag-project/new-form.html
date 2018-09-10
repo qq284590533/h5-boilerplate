@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>表单页面</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+	<link rel="stylesheet" href="css/new-form.css">
+	<!-- <script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script> -->
+	<script src="https://cdn.bootcss.com/vue/2.4.2/vue.min.js"></script>
+</head>
+
+<body>
+	<div class="content" id="app">
+		<ul class="tab_box" v-for="items in tableFormData">
+			<li v-for='item in items' v-if='item.key !="table" && item.key !="input_title" && item.key !="input_text" && item.key !="input_info"'>
+				<span class="Tab_title">{{item.name}}：</span>
+				<span class="tab_value">{{item.value}}</span>
+			</li>
+			<li v-for='(item, index) in items' v-if='item.key =="table" && tableTitle[0].length>0'>
+				<table>
+					<tr v-for='table in tableTitle'>
+						<th>序号</th>
+						<th v-for='item in table'>{{item}}</th>
+					</tr>
+					<tr v-for='(table, index) in tableArr'>
+						<th>{{index+1}}</th>
+						<td v-for='item in table'>{{item}}</td>
+					</tr>
+				</table>
+			</li>
+			<li v-for='item in items' v-if='item.key =="input_text"'>
+				<h3>{{item.value}}</h3>
+			</li>
+			<li v-for='item in items' v-if='item.key =="input_title"'>
+				<p class="input_title">{{item.value}}</p>
+			</li>
+			<li v-for='item in items' v-if='item.key =="input_info"'>
+				<p class="input_describe">{{item.value}}</p>
+			</li>
+		</ul>
+		<p v-on:click="print" class="print"><span>打印按钮</span></p>
+	</div>
+	<script type="text/javascript">
+		new Vue({
+			el: '#app',
+			data: {
+				message: 'Hello Vue.js!',
+				tableFormData: [],
+				tableTitle: [],
+				tableArr: []
+			},
+			created() {
+				var tableFormData = JSON.parse(localStorage.getItem('contentListArr'));
+				this.tableFormData = tableFormData;
+				console.dir(this.tableFormData);
+				// 重组table数据结构
+				let key = [];
+				let name = [];
+				let value = [];
+				this.tableFormData.forEach(function (item, index) {
+					if (item[0]) {
+						if (item[0].key == 'table') {
+							if ((item[0].table) && (item[0].table.length > 0)) {
+								item[0].table.forEach(function (keyArr) {
+									name.push(keyArr.name);
+									key.push(keyArr.key);
+									value.push(keyArr.value);
+								})
+							}
+						}
+					}
+				})
+				this.tableTitle.push(name);
+				this.tableArr.push(key);
+				this.tableArr.push(value);
+				// console.dir(this.tableTitle);
+			},
+
+			methods: {
+				print: function () {
+					window.print();
+				}
+			}
+		})
+	</script>
+
+</body>
+
+</html>

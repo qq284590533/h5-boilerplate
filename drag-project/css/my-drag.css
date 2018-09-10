@@ -47,6 +47,7 @@ ul li {
 
 
 
+
 /* 填充的部分样式 */
 
 .content_box {
@@ -106,9 +107,11 @@ ul li {
 .content_list .content li span {
 	flex: 0 0 50%;
 }
-.content_list .content li .description{
+
+.content_list .content li .description {
 	display: block;
 }
+
 .content_list .content li p {
 	margin: 0;
 	flex: 1;
@@ -131,7 +134,10 @@ ul li {
 	top: 0;
 	right: 0;
 }
+
+
 /* 删除按钮 */
+
 .content_list .content b img {
 	width: 12px;
 }
@@ -144,12 +150,14 @@ ul li {
 	display: block;
 }
 
-.tab_classify li input{
+.tab_classify li input {
 	display: none;
 }
-.tab_classify li p.fill-data{
+
+.tab_classify li .fill-data {
 	display: none;
 }
+
 .tab_classify .table_name {
 	padding: 0;
 	padding-left: 20px;
@@ -164,33 +172,65 @@ ul li {
 	background-size: 18px 18px;
 	background-position: -2px 3px;
 }
-.content_list .content li.input_box span{
+
+.content_list .content li.input_box span {
 	flex: 0 0 15%;
 }
 
-.content_list .input_box input{
+.content_list .input_box input {
 	flex: 1;
-    display: block;
-    margin: 2px;
+	display: block;
+	margin: 2px;
 }
-.content_list .content li h2{
+
+.content_list .content li input {
+	width: 100%;
+    margin: 2px;
+	background: #fff;
+}
+.content_list .content li input:disabled {
+    background: #fff;
+    border: none;
+    border-left: 1px dashed #aaa;
+    text-align: center;
+}
+/* 输入框 */
+.content_list .content li.input_title input{
+	background: #f8f8f8;
+	text-align: left;
+}
+.content_list .table-grid td input{
+    height: 33px;
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.content_list .content li h2 {
 	margin: 0;
 	text-align: center;
 	width: 100%;
 	display: none;
 }
-.content_list .content li label.description{
+
+.content_list .content li label.description {
 	display: none;
 	width: 100%;
 	text-align: right;
 	color: #f00;
 	font-size: 14px;
 }
-.content_list .input_box span{
+
+.content_list .input_box span {
 	display: none;
 }
+
 .content_list .input_box p {
-		display: none;
+	display: none;
+}
+
+.tab_classify li h2 {
+	margin: 0;
 }
 
 
@@ -232,6 +272,7 @@ ul li {
 
 
 
+
 /* 表格 */
 
 .table table tr {
@@ -258,15 +299,32 @@ ul li {
 }
 
 
+
 /* 按钮保存 */
 
 .save-all {
 	margin-left: 22%;
 }
 
-.save-all img {
-	display: block;
+.save-all img.save {
+	display: inline-block;
 	margin: 0 auto;
 	margin-top: 40px;
 	width: 180px;
+}
+
+.center-button {
+	display: block;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.edit_img {
+	display: inline-block;
+}
+
+.edit_img img {
+	display: inline;
+	margin: 0;
+	margin-top: 40px;
 }

@@ -14,16 +14,25 @@
 			<div class="tab_list">
 				<p class="table_list_name">列表一</p>
 				<ul class="tab_classify">
-					<li key='serial-num'><span>序号</span><b></b><p class="fill-data">{serial-num}</p></li>
+					<li key='serial-num'><span>序号</span><b></b><p class="fill-data">[serial-num]</p></li>
+					<li key='barcode'><span>条形码</span><b></b><p class="fill-data">[barcode]</p></li>
 					<li key='table' class="table">
 						<p class="table_name">表格</p>
 						<table class="table-grid">
 							<tr>
+								<td>序号</td>
 								<td>Data</td>
 								<td>Data</td>
 								<td>Data</td>
 							</tr>
 							<tr>
+								<td>1</td>
+								<td>Data</td>
+								<td>Data</td>
+								<td>Data</td>
+							</tr>
+							<tr>
+								<td>2</td>
 								<td>Data</td>
 								<td>Data</td>
 								<td>Data</td>
@@ -41,19 +50,18 @@
 						</div>
 						<b></b>
 					</li>
-					
-					<li key='barcode'><span>条形码</span><b></b><p class="fill-data">{barcode}</p></li>
 					<li key='input_text' class="input_box"><span>标题输入框</span><b></b> <input type="text" placeholder="添加标题"><h2></h2></li>
 					<li key='input_info' class="input_box"><span>描述输入框</span><b></b> <input type="text" placeholder="添加描述"><label class="description"></label></li>
-					<li key='project'><span>项目</span><b></b><p class="fill-data">{project}</p></li>
-					<li key='inventory-addr'><span>存货地址</span><b></b><p class="fill-data">{inventory-addr}</p></li>
-					<li key='inventory-img'><span>存货图片</span><b></b><p class="fill-data">{inventory-img}</p></li>
+					<li key='input_title' class="input_box input_title"><span>输入框</span><b></b> <input class="fill-data" type="text" placeholder="标题"></li>
+					<li key='project'><span>项目</span><b></b><p class="fill-data">[project]</p></li>
+					<li key='inventory-addr'><span>存货地址</span><b></b><p class="fill-data"></p></li>
+					<li key='inventory-img'><span>存货图片</span><b></b><p class="fill-data"></p></li>
 					<li key='inventory-code'><span>存货编码</span><b></b><p class="fill-data"></p></li>
 					<li key='standard-modal'><span>规格型号</span><b></b><p class="fill-data"></p></li>
-					<li key='color'><span>颜色</span><b></b><p class="fill-data"></p></li>
-					<li key='size'><span>尺寸</span><b></b><p class="fill-data"></p></li>
+					<li key='color'><span>颜色</span><b></b><p class="fill-data">[color]</p></li>
+					<li key='size'><span>尺寸</span><b></b><p class="fill-data">[size]</p></li>
 					<li key='purchase-unit'><span>采购单位</span><b></b><p class="fill-data"></p></li>
-					<li key='quantity'><span>数量</span><b></b><p class="fill-data"></p></li>
+					<li key='quantity'><span>数量</span><b></b><p class="fill-data">[quantity]</p></li>
 					<li key='rate'><span>换算率</span><b></b><p class="fill-data"></p></li>
 					<li key='metering-unit-sed'><span>计量单位2</span><b></b><p class="fill-data"></p></li>
 					<li key='quantity-sed'><span>数量2</span><b></b><p class="fill-data"></p></li>
@@ -74,7 +82,13 @@
 				<span class="add_name">点击添加</span>
 			</div>
 		</div>
-		<div class="save-all"><img src="images/save.png" alt=""></div>
+		<div class="save-all">
+			<div class="center-button">
+				<!-- <img class="save" src="images/save.png" alt="">
+				<img class='edit' src="images/edit.png" alt=""> -->
+				<a class="edit_img" href="new-form.html"><img class="save" src="images/save.png" alt=""></a>
+			</div>
+		</div>
 	</div>
 
 
@@ -108,7 +122,7 @@
 				drag.class_name = className;
 
 				//监听鼠标按下事件，动态绑定要拖拽的节点（因为节点可能是动态添加的）
-				$('.' + drag.class_name).on('mousedown', 'ul.tab_classify li', function (event) {
+				$('.' + drag.class_name).on('mousedown', 'ul li', function (event) {
 					// event.stopPropagation();
 					//当在允许拖拽的节点上监听到点击事件，将标识设置为可以拖拽
 					drag.permitDrag = true;
@@ -116,7 +130,7 @@
 					drag.old_elm = $(this);
 					//执行开始拖拽的操作
 					drag.mousedown(event);
-					return false;
+					// return false;
 				});
 
 				//监听鼠标移动
@@ -155,14 +169,24 @@
 				drag._left = e.pageX - drag._x;
 				drag._top = e.pageY - drag._y;
 
-				//3.修改克隆节点的坐标，实现跟随鼠标进行移动的效果
-				$(drag.tmp_elm).css({
-					'position': 'absolute',
-					'background-color': '#f8f8f8',
-					'left': drag._x,
-					'top': drag._y,
-				});
-
+				//3.修改克隆节点的坐标，实现跟随鼠标进行移动的效果,
+				// 鼠标在拖动的时候,有时候会覆盖删除按钮,所以调整了一下样式,防止覆盖按钮
+				if($(drag.tmp_elm).attr('key') == 'table') {
+					$(drag.tmp_elm).css({
+						'position': 'absolute',
+						'width': '30%',
+						'background-color': '#f8f8f8',
+						'left': drag._x,
+						'top': drag._y,
+					});
+				}else{
+					$(drag.tmp_elm).css({
+						'position': 'absolute',
+						'background-color': '#f8f8f8',
+						'left': drag._x,
+						'top': drag._y,
+					});
+				}
 				//4.添加临时节点
 				tmp = $(drag.old_elm).parent().append(drag.tmp_elm);
 				drag.tmp_elm = $(tmp).find(drag.tmp_elm);
@@ -192,7 +216,7 @@
 				});
 
 				//判断当前容器是否允许放置节点
-				$.each($('.' + drag.class_name + ' ul'), function (index, value) {
+				$.each($('.' + drag.class_name + ' ul.content'), function (index, value) {
 
 					//获取容器的坐标范围 (区域)
 					var box_x = $(value).offset().left; //容器左上角x坐标
@@ -243,7 +267,10 @@
 							//向目标容器添加节点并删除原节点
 							tmp = $(drag.old_elm).clone();
 							var newObj = $(value).append(tmp);
-							// $(drag.old_elm).remove();
+							// 判断,如果是从左边拖过来的,不移除,否则移除
+							if($(drag.old_elm).parent('.tab_classify').length == 0) {
+								$(drag.old_elm).remove();
+							}
 							//获取新添加节点的对象
 							drag.new_elm = $(newObj).find(tmp);
 							
@@ -251,10 +278,10 @@
 			/* -------------// ********************* -----------------------------*/
 			
 							// 追加：号，以及拖拽的时候的数据
-							if (drag.new_elm.children('span').length) {
-								drag.new_elm.children('span').html(drag.new_elm.children('span').html() + ':')
-								// drag.new_elm.append('<span>lily123</span>');
-							}
+// 							if (drag.new_elm.children('span').length) {
+// 								drag.new_elm.children('span').html(drag.new_elm.children('span').html() + ':')
+// 								// drag.new_elm.append('<span>lily123</span>');
+// 							}
 							
 							// 鼠标移动到文字上面添加删除按钮
 							$("ul.content li").mouseover(function () {
