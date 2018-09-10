@@ -45,6 +45,7 @@ function getPos(layout, e) {
 	}
 }
 
+
 function Layout() {
 	this.elements = {
 		layout: ele('layout'),
@@ -77,6 +78,7 @@ function Layout() {
 	this.init()
 }
 
+//初始化
 Layout.prototype.init = function () {
 	var _this = this;
 	this.elements.addImg.addEventListener('click', function () {
@@ -99,24 +101,22 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 	})
 }
 
+//选择图片
 function imgChange(layout) {
 	var file = layout.elements.selectImage.files.item(0),
 		url = window.URL.createObjectURL(file),
 		type = file.type,
 		id = new Date().getTime(),
 		div = createEle('div'),
-		img = createEle('img'),
 		eventbox = createEle('div'),
 		closebtn = createEle('i');
 	editbtn = createEle('i');
 	div.id = id;
 	div.className = 'block';
-	div.appendChild(img);
 	div.appendChild(closebtn);
 	div.appendChild(editbtn);
 	div.appendChild(eventbox);
-
-	img.src = url;
+	img = createImg(url);
 	img.onload = function () {
 		var canvas = document.createElement("canvas");
 		canvas.width = img.width;
@@ -126,6 +126,7 @@ function imgChange(layout) {
 		var dataURL = canvas.toDataURL(type);
 		img.src = dataURL;
 		img.onload = null;
+		div.appendChild(img);
 		layout.elements.selectImage.value = null;
 	}
 
@@ -151,6 +152,15 @@ function imgChange(layout) {
 	layout.elements.layout.appendChild(div);
 }
 
+function createImg(url){
+	var imgBox = ele('imgBox');
+	var img = createEle('img');
+	imgBox.style.display = 'none';
+	img.src = url;
+	imgBox.appendChild(img);
+	return img;
+}
+
 //选择HTML文件
 function htmlChange(layout) {
 	var iframe = document.createElement('iframe');
@@ -158,7 +168,6 @@ function htmlChange(layout) {
 		url = window.URL.createObjectURL(file);
 	iframe.style.display = 'none';
 	iframe.src = url;
-	console.log(layout.elements.layout)
 	if (iframe.attachEvent) {
 		iframe.attachEvent("onload", function () {
 			layout.elements.layout.innerHTML = iframe.contentWindow.document.getElementById('layout').innerHTML;
@@ -516,9 +525,11 @@ function Menu(id) {
 				_this.data2 = null;
 			}
 			if (_this.data1[0].id != '0') {
+				_this.span.className = 'hasevent'
 				setAttr(_this.span, 'data-eventid1', _this.data1[0].id);
 				setAttr(_this.span, 'data-eventname1', _this.data1[0].text)
 			} else {
+				_this.span.className = ''
 				_this.span.removeAttribute('data-eventid1')
 				_this.span.removeAttribute('data-eventname1')
 			}

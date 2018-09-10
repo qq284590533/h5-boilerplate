@@ -75,6 +75,12 @@ ul{
 	background-color: rgba(0, 17, 255, 0.336);
 }
 
+
+#pageView #layout .eventbox span.hasevent{
+	border: 1px dashed #fff;
+	background-color: rgba(255, 29, 21, 0.336);
+}
+
 #pageView #layout .block>i{
 	display: block;
 }
@@ -195,6 +201,18 @@ ul{
 	font-size: 14px;
 	color: #666;
 	padding: 0 10px;
+}
+
+#imgBox{
+	position: absolute;
+	z-index: -1;
+	display: none;
+	opacity: 0;
+	width: 750px;
+}
+
+#imgBox img{
+	width: 100%;
 }
 
 #eventName{
