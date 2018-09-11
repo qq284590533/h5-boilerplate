@@ -41,8 +41,6 @@ ul{
 
 .phone{
 	position: relative;
-	top: 50%;
-	transform: translateY(-50%);
 	width: 400px;
 	height: 807px;
 	background-image: url(../img/phone.png);
@@ -241,7 +239,9 @@ ul{
     background: rgb(73, 137, 255);
     text-align: center;
     border-radius: 3px;
-    color: #fff;
+	color: #fff;
+	margin-right: 10px;
+	margin-bottom: 10px;
 }
 .btn:hover{
 	background: rgb(41, 116, 255);

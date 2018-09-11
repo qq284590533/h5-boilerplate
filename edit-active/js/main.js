@@ -152,7 +152,7 @@ function imgChange(layout) {
 	layout.elements.layout.appendChild(div);
 }
 
-function createImg(url){
+function createImg(url) {
 	var imgBox = ele('imgBox');
 	var img = createEle('img');
 	imgBox.style.display = 'none';
@@ -189,7 +189,7 @@ function htmlChange(layout) {
 function amendLayout(layout) {
 	var eventboxs = layout.elements.layout.querySelectorAll('.eventbox');
 	eventboxs.forEach(function (eventbox) {
-		return (function (eventbox){
+		return (function (eventbox) {
 			layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
 		})(eventbox)
 	});
@@ -209,7 +209,7 @@ function amendLayout(layout) {
 	})
 
 	var spans = layout.elements.layout.querySelectorAll('span');
-	spans.forEach(function (span){
+	spans.forEach(function (span) {
 		layout.bindEvent(span, 'mousemove', layout.onMouseMove);
 		layout.bindEvent(span, 'mouseup', layout.onMouseUp);
 		layout.bindEvent(span, 'contextmenu', contextmenu);
@@ -587,6 +587,11 @@ function createHtml() {
 		alert('文件名不能为空！')
 		return
 	}
+	var title = name;
+	
+	var htmlfoot = '<script>window.onload = function (){var spanList = document.querySelectorAll("span[data-hasevent]");spanList.forEach(function (item) {item.addEventListener("click", function(e){return (function(item){var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = parseInt(id1);if(id2){id = parseInt(id1)+"/"+ parseInt(id2)}window.location.href = "tticarstorecall://" + id;})(item)})})}</script></body></html>'
+
+	var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>'+title+'</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>'
 	var filename = name + '.html'
 	var htmlbody = document.getElementById('pageView').innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
@@ -602,9 +607,6 @@ function trim(str, is_global) {
 	return result;
 }
 
-var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>Document</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>';
-
-var htmlfoot = '<script>window.onload = function (){var spanList = document.querySelectorAll("span[data-hasevent]");spanList.forEach(function (item) {item.addEventListener("click", function(e){return (function(item){var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = parseInt(id1);if(id2){id = parseInt(id1)+"/"+ parseInt(id2)}window.location.href = "tticarstorecall://" + id;})(item)})})}</script></body></html>'
 
 // 下载文件方法
 function funDownload(content, filename) {
