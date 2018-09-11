@@ -29,9 +29,11 @@ ul{
     background-color: rgba(216, 216, 216, 0.5);
 } */
 .wrapper{
+	position: relative;
 	width: 1000px;
 	height: 100%;
 	margin: 0 auto;
+	z-index: 1;
 }
 .container{
 	width: 100%;
@@ -167,7 +169,7 @@ ul{
 #layout .eventbox span i.resize{
 	width: 0px;
 	height: 0px;
-	border: 5px solid #eee;
+	border: 5px solid #ffa200;
 	border-left-color:transparent;
 	border-top-color:transparent;
 	right: -1px;

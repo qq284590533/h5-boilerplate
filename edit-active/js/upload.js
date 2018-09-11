@@ -19,11 +19,15 @@ var fileJson = {};
 function initPlupload(){
 	uploader = new plupload.Uploader({
 		runtimes : 'html5,flash,silverlight,html4',
-		browse_button : 'upload',
+		browse_button : 'addImg',
 		url : 'http://oss.aliyuncs.com',
 		container: document.getElementById('container'),
 		filters: {
 			mime_types : [
+				{
+					title: "Image files",
+					extensions: "jpg,gif,png"
+				},
 				{
 					title: "html files",
 					extensions: "html"
@@ -34,10 +38,11 @@ function initPlupload(){
 		},
 		init: {
 			PostInit: function() {//上传初始化的操作函数
-				document.getElementById('ossfile').innerHTML = '';
+				// document.getElementById('ossfile').innerHTML = '';
 			},
 			FilesAdded: function(up, files) { 			//文件上传前，就是打开文件对话框，选好文件之后触发
-				getOssSign(files); 						//上传添加文件后的操作函数
+				// getOssSign(files); 						//上传添加文件后的操作函数
+				// console.log(this.files)
 				ossUploadAddedAction(up, files);
 			},
 			BeforeUpload: function(up, file) {			//上传之前的操作函数
@@ -67,42 +72,42 @@ function fileSucesse(file){
 	document.getElementById(id).appendChild(p);
 }
 
-function getOssSign(files){
-	$.ajax({ //异步请求返回给后台
-		// url: 'https://owneradmintest.tticar.com/oss/getSign',
-		url: 'https://owneradmin.tticar.com/oss/getSign',
-		type: 'post',
-		async : false,
-		data: {
-			'ossPathDir':'h5-activity/'
-		},
-		success: function (data) {
-			var code = data.code;
-			if(code == 0){
-				var result = data.data;
-				ossParams["host"] =result.host;
-				ossParams["key"] =result.dir;
-				ossParams["policyBase64"] =result.policy;
-				ossParams["accessid"] =result.accessid;
-				ossParams["signature"] =result.signature;
-			}else{
-				console.log("获取oss签名失败");
-			}
-		},
-		complete: function () {
-		},
-	});
-	return true;
-}
+// function getOssSign(files){
+// 	$.ajax({ //异步请求返回给后台
+// 		// url: 'https://owneradmintest.tticar.com/oss/getSign',
+// 		url: 'https://owneradmin.tticar.com/oss/getSign',
+// 		type: 'post',
+// 		async : false,
+// 		data: {
+// 			'ossPathDir':'h5-activity/'
+// 		},
+// 		success: function (data) {
+// 			var code = data.code;
+// 			if(code == 0){
+// 				var result = data.data;
+// 				ossParams["host"] =result.host;
+// 				ossParams["key"] =result.dir;
+// 				ossParams["policyBase64"] =result.policy;
+// 				ossParams["accessid"] =result.accessid;
+// 				ossParams["signature"] =result.signature;
+// 			}else{
+// 				console.log("获取oss签名失败");
+// 			}
+// 		},
+// 		complete: function () {
+// 		},
+// 	});
+// 	return true;
+// }
 
-function ossUploadAddedAction(up, files) {
+function ossUploadAddedAction(up, files, curindex) {
+	console.log(up.files);
 	plupload.each(files, function(file) {
-		document.getElementById('ossfile').innerHTML = '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ')<b></b>'
+		document.getElementById('ossfile').innerHTML += '<div id="' + file.id + '">' + file.name + ' (' + plupload.formatSize(file.size) + ')<b></b>'
 			+'<div class="progress"><div class="progress-bar" style="width: 0%"></div></div>'
 			+'</div>';
-		fileJson[file.id]
 	});
-	uploader.start();
+	// uploader.start();
 }
 
 function ossBeforeUploadAction(up, file) {

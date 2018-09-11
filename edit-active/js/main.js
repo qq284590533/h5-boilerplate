@@ -21,7 +21,7 @@ function deleteData(key, json) {
 
 //添加关闭按钮
 function addCloseBtn(layout, span) {
-	var i = document.createElement('i');
+	var i = createEle('i');
 	i.innerHTML = '×';
 	i.className = 'close';
 	i.addEventListener('click', function () {
@@ -29,6 +29,16 @@ function addCloseBtn(layout, span) {
 	})
 	span.appendChild(i);
 }
+
+//添加调整大小按钮
+function addresizeBtn(layout, span) {
+	var resizeBtn = createEle('i');
+	resizeBtn.className = 'resize';
+	layout.setRespondEventElement(resizeBtn);
+	setAttr(resizeBtn, 'data-handleName', 'resizeEventBox');
+	span.appendChild(resizeBtn);
+}
+
 
 //获取鼠标相对于eventBox的定位
 function getPos(layout, e) {
@@ -42,6 +52,38 @@ function getPos(layout, e) {
 		layout.pos.end = pos
 	} else {
 		layout.pos.start = pos
+	}
+}
+
+var upLoadTools = {
+	imgToView:function (layout, up, files) {
+		plupload.each(files, function (file) {
+			if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
+				var fr = new mOxie.FileReader();
+				fr.onload = function () {
+					// file.imgsrc = fr.result;
+					// console.log(fr.result);
+					createBlock(layout,fr.result)
+				}
+				fr.readAsDataURL(file.getSource());
+			} else {
+				var preloader = new mOxie.Image();
+				preloader.onload = function () {
+					var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
+					// file.imgsrc = imgsrc;
+					// console.log(imgsrc);
+					createBlock(layout,imgsrc)
+
+					preloader.destroy();
+					preloader = null;
+				};
+				preloader.load(file.getSource());
+			}
+			layout.imgFiles.push(file);
+		});
+		// up.files.pop();
+		console.log(layout.imgFiles)
+		// console.log(up.files)
 	}
 }
 
@@ -74,22 +116,84 @@ function Layout() {
 	this.mouseHasDown = false;
 	this.spanBox = null; //当前操作的spanBox
 	this.spanBoxPos = null;
-
+	this.imgFiles = [];
 	this.init()
 }
 
 //初始化
 Layout.prototype.init = function () {
 	var _this = this;
-	this.elements.addImg.addEventListener('click', function () {
-		_this.elements.selectImage.click();
-	})
-	this.elements.importHtml.addEventListener('click', function () {
-		_this.elements.selectHtml.click();
-	})
-	this.bindEvent(this.elements.selectImage, 'change', imgChange);
-	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
-	this.bindEvent(this.elements.changeImage, 'change', editImg);
+	var ossParams = {
+		host: "",
+		accessid: '',
+		accesskey: '',
+		policyBase64: '',
+		signature: '',
+		key: ''
+	}
+
+	var signParams = {
+		fileServerUrl: "",
+		fileName: "",
+		type: "1",
+	};
+
+	this.uploader = new plupload.Uploader({
+		runtimes: 'html5,flash,silverlight,html4',
+		browse_button: _this.elements.addImg,
+		url: 'http://oss.aliyuncs.com',
+		container: document.getElementById('container'),
+		filters: {
+			mime_types: [{
+					title: "Image files",
+					extensions: "jpg,gif,png"
+				},
+				{
+					title: "html files",
+					extensions: "html"
+				}
+			],
+			max_file_size: '5mb', //最大只能上传10mb的文件
+			prevent_duplicates: false //不允许选取重复文件
+		},
+		init: {
+			PostInit: function () { //上传初始化的操作函数
+				// document.getElementById('ossfile').innerHTML = '';
+			},
+			FilesAdded: function (up, files) { //文件上传前，就是打开文件对话框，选好文件之后触发
+				// getOssSign(files); 						//上传添加文件后的操作函数
+				// console.log(this.files)
+				// console.log(files[0]);
+				// console.log(files[0].type.split('/')[0]);
+				upLoadTools.imgToView(_this, up, files);
+
+				// ossUploadAddedAction(up, files);
+			},
+			// BeforeUpload: function (up, file) { //上传之前的操作函数
+			// 	ossBeforeUploadAction(up, file);
+			// },
+			// UploadProgress: function (up, file) { //上传过程中的操作函数
+			// 	ossUploadProgressAction(up, file);
+			// },
+			// FileUploaded: function (up, file, info) { //上传之后的操作函数
+			// 	fileSucesse(file)
+			// 	uploader.refresh();
+			// },
+			Error: function (up, error) {
+				uploader.refresh();
+			}
+		}
+	});
+	this.uploader.init();
+	// this.elements.addImg.addEventListener('click', function () {
+	// 	_this.elements.selectImage.click();
+	// })
+	// this.elements.importHtml.addEventListener('click', function () {
+	// 	_this.elements.selectHtml.click();
+	// })
+	// this.bindEvent(this.elements.selectImage, 'change', imgChange);
+	// this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
+	// this.bindEvent(this.elements.changeImage, 'change', editImg);
 	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
 }
 
@@ -100,6 +204,47 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 		handle(_this, e);
 	})
 }
+
+
+//选择图片
+function createBlock(layout,url) {
+	var id = new Date().getTime(),
+		div = createEle('div'),
+		eventbox = createEle('div'),
+		closebtn = createEle('i');
+	editbtn = createEle('i');
+	div.id = id;
+	div.className = 'block';
+	div.appendChild(closebtn);
+	div.appendChild(editbtn);
+	div.appendChild(eventbox);
+	var img = createEle('img');
+	img.src = url;
+	div.appendChild(img);
+
+	eventbox.className = 'eventbox';
+	setAttr(eventbox, 'data-handleName', 'addEventBox');
+	layout.setRespondEventElement(eventbox);
+	layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
+
+	closebtn.innerHTML = '×';
+	closebtn.className = 'close';
+
+	closebtn.addEventListener('click', function () {
+		ele(id).remove();
+	})
+
+	editbtn.innerHTML = '／';
+	editbtn.className = 'edit'
+	editbtn.addEventListener('click', function () {
+		layout.img = ele(id).querySelector('img');
+		// layout.elements.changeImage.click();
+		console.log('修改图片')
+	})
+
+	layout.elements.layout.appendChild(div);
+}
+
 
 //选择图片
 function imgChange(layout) {
@@ -155,7 +300,6 @@ function imgChange(layout) {
 function createImg(url) {
 	var imgBox = ele('imgBox');
 	var img = createEle('img');
-	imgBox.style.display = 'none';
 	img.src = url;
 	imgBox.appendChild(img);
 	return img;
@@ -351,13 +495,6 @@ function addEventBox_mousedown(layout, e) {
 	setAttr(span, 'data-handleName', 'moveEventBox');
 	layout.eventBox.appendChild(span);
 	layout.spanBox = span;
-	addCloseBtn(layout, span);
-
-	var resizeBtn = createEle('i');
-	resizeBtn.className = 'resize';
-	layout.setRespondEventElement(resizeBtn);
-	setAttr(resizeBtn, 'data-handleName', 'resizeEventBox');
-	span.appendChild(resizeBtn);
 
 	layout.bindEvent(layout.spanBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(layout.spanBox, 'mouseup', layout.onMouseUp);
@@ -380,24 +517,16 @@ function addEventBox_mousemove(layout, e) {
 
 //添加事件span时鼠标放开事件处理函数
 function addEventBox_mouseup(layout, e) {
-	layout.pos = {
-		start: null,
-		end: null
-	};
 	//如果spanbox宽高小于设定值就删除这个spanbox，防止点击误操作。
 	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+
+	addCloseBtn(layout, layout.spanBox);
+	addresizeBtn(layout, layout.spanBox) 
+
 	if (parseFloat(spanBoxStyle.width) < 10 || parseFloat(spanBoxStyle.height) < 10) {
 		layout.spanBox.remove();
 	}
-	layout.boxStyle = {
-		w: null,
-		h: null
-	}
-	layout.spanBox = null;
-	layout.mouseHasDown = false;
-	layout.handleName = null;
-	layout.eventHandleBox.remove();
-	layout.eventHandleBox = null;
+	resetDatas(layout)
 }
 
 //移动事件span时鼠标点下事件处理函数
@@ -429,8 +558,24 @@ function moveEventBox_mousemove(layout, e) {
 
 //移动事件span时鼠标放开事件处理函数
 function moveEventBox_mouseup(layout, e) {
-	addEventBox_mouseup(layout, e)
+	resetDatas(layout);
 	layout.spanBoxPos = null;
+}
+
+function resetDatas(layout){
+	layout.pos = {
+		start: null,
+		end: null
+	};
+	layout.boxStyle = {
+		w: null,
+		h: null
+	}
+	layout.spanBox = null;
+	layout.mouseHasDown = false;
+	layout.handleName = null;
+	layout.eventHandleBox.remove();
+	layout.eventHandleBox = null;
 }
 
 function resizeEventBox_mousedown(layout, e) {
@@ -588,10 +733,10 @@ function createHtml() {
 		return
 	}
 	var title = name;
-	
+
 	var htmlfoot = '<script>window.onload = function (){var spanList = document.querySelectorAll("span[data-hasevent]");spanList.forEach(function (item) {item.addEventListener("click", function(e){return (function(item){var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = parseInt(id1);if(id2){id = parseInt(id1)+"/"+ parseInt(id2)}window.location.href = "tticarstorecall://" + id;})(item)})})}</script></body></html>'
 
-	var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>'+title+'</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>'
+	var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>' + title + '</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>'
 	var filename = name + '.html'
 	var htmlbody = document.getElementById('pageView').innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
