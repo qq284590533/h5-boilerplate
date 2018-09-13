@@ -95,8 +95,6 @@ function addImgHandle(layout, file, up) {
 				up.files.splice(i, 1);
 			}
 		}
-		console.log(layout.imgFilesJson)
-		console.log(up.files)
 	}
 }
 
@@ -298,8 +296,6 @@ function createBlock(layout, file, up) {
 		layout.elements.addImg.click();
 	})
 	layout.imgFilesJson[file.id] = file;
-	console.log(layout.imgFilesJson)
-	console.log(up.files)
 }
 
 function createImg(url) {
@@ -649,13 +645,11 @@ function Menu(id) {
 		});
 		this.ok.addEventListener('click', function () {
 			_this.data1 = _this.selectGroup.s1.select2('data');
-			// console.log(_this.data1)
 			if (_this.selectGroup.s2Id) {
 				_this.data2 = _this.selectGroup.s2.select2('data');
 				if (_this.data2[0].text != '') {
 					_this.data2[0].name = _this.data2[0].text;
 				}
-				// console.log(_this.data2)
 			} else {
 				_this.data2 = null;
 			}
@@ -675,7 +669,6 @@ function Menu(id) {
 				_this.span.removeAttribute('data-eventid2')
 				_this.span.removeAttribute('data-eventname2')
 			}
-			// console.log(_this.data1, _this.data2);
 			_this.close();
 		})
 	}
@@ -708,7 +701,6 @@ Menu.prototype.open = function (span) {
 			}
 		}
 	}
-	// console.log(val)
 	this.selectGroup = new SelectGroup(this.body, val);
 	this.span = span;
 	this.contBox.style.display = 'flex';
@@ -732,21 +724,16 @@ function createHtml(layout) {
 	var filename = name + '.html'
 	var htmlbody = document.getElementById('pageView').cloneNode(true);
 
-	console.log(htmlbody);
 	var imgs = htmlbody.querySelectorAll('img[data-isnew=true]');
-	console.log(imgs);
 
 	imgs.forEach(function (item) {
 		item.src = "https://f.tticar.com/h5-activity/" + name + '\/' + item.getAttribute('data-name');
 		setAttr(item, 'data-isnew', false);
-		console.log(item);
 	})
 
-	console.log(layout);
 	htmlbody = htmlbody.innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
 	layout.filePath = name;
-	console.log(name)
 	layout.imgUploader.start();
 	funDownload(html, filename);
 	htmlbody = null;
