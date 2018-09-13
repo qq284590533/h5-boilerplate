@@ -23,7 +23,7 @@ function deleteData(key, json) {
 function addCloseBtn(layout, span) {
 	var i = createEle('i');
 	i.innerHTML = '×';
-	i.className = 'close';
+	i.className = 'close close_event';
 	i.addEventListener('click', function () {
 		span.remove();
 	})
@@ -55,45 +55,71 @@ function getPos(layout, e) {
 	}
 }
 
-var upLoadTools = {
-	imgToView:function (layout, up, files) {
-		plupload.each(files, function (file) {
-			if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
-				var fr = new mOxie.FileReader();
-				fr.onload = function () {
-					// file.imgsrc = fr.result;
-					// console.log(fr.result);
-					createBlock(layout,fr.result)
-				}
-				fr.readAsDataURL(file.getSource());
-			} else {
-				var preloader = new mOxie.Image();
-				preloader.onload = function () {
-					var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
-					// file.imgsrc = imgsrc;
-					// console.log(imgsrc);
-					createBlock(layout,imgsrc)
-
-					preloader.destroy();
-					preloader = null;
-				};
-				preloader.load(file.getSource());
+function imgToView(layout, up, files) {
+	plupload.each(files, function (file) {
+		if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
+			var fr = new mOxie.FileReader();
+			fr.onload = function () {
+				file.imgsrc = fr.result;
+				addImgHandle(layout, file, up)
 			}
-			layout.imgFiles.push(file);
-		});
-		// up.files.pop();
-		console.log(layout.imgFiles)
-		// console.log(up.files)
+			fr.readAsDataURL(file.getSource());
+		} else {
+			var preloader = new mOxie.Image();
+			preloader.onload = function () {
+				var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
+				file.imgsrc = imgsrc;
+				preloader.destroy();
+				preloader = null;
+				addImgHandle(layout, file, up)
+			};
+			preloader.load(file.getSource());
+		}
+	});
+}
+
+
+function addImgHandle(layout, file, up) {
+	if (!layout.imgFilesJson[layout.blockId] && !ele(layout.blockId)) {
+		createBlock(layout, file, up)
+	} else {
+		var img = ele(layout.blockId).querySelector('img')
+		img.src = file.imgsrc;
+		setAttr(img, 'data-isnew', true);
+		setAttr(img, 'data-name', file.name);
+		ele(layout.blockId).id = file.id;
+		layout.imgFilesJson[file.id] = file;
+		delete layout.imgFilesJson[layout.blockId];
+		for (var i = 0; i < up.files.length; i++) {
+			if (up.files[i].id == layout.blockId) {
+				up.files.splice(i, 1);
+			}
+		}
 	}
 }
+
+var ossParams = {
+	host: "",
+	accessid: '',
+	accesskey: '',
+	policyBase64: '',
+	signature: '',
+	key: ''
+}
+
+var signParams = {
+	fileServerUrl: "",
+	fileName: "",
+	type: "1",
+};
+
+var fileJson = {};
 
 
 function Layout() {
 	this.elements = {
 		layout: ele('layout'),
-		selectImage: ele('selectImage'),
 		addImg: ele('addImg'),
-		changeImage: ele('changeImage'),
 		selectHtml: ele('selectHtml'),
 		importHtml: ele('importHtml')
 	};
@@ -111,6 +137,8 @@ function Layout() {
 		end: null
 	};
 	this.img = null;
+	this.imgFilesJson = {};
+	this.blockId = null;
 	this.eventBox = null;
 	this.handleName = null;
 	this.mouseHasDown = false;
@@ -123,77 +151,94 @@ function Layout() {
 //初始化
 Layout.prototype.init = function () {
 	var _this = this;
-	var ossParams = {
-		host: "",
-		accessid: '',
-		accesskey: '',
-		policyBase64: '',
-		signature: '',
-		key: ''
-	}
-
-	var signParams = {
-		fileServerUrl: "",
-		fileName: "",
-		type: "1",
-	};
-
-	this.uploader = new plupload.Uploader({
+	//上传图片文件
+	this.imgUploader = new plupload.Uploader({
 		runtimes: 'html5,flash,silverlight,html4',
 		browse_button: _this.elements.addImg,
 		url: 'http://oss.aliyuncs.com',
 		container: document.getElementById('container'),
 		filters: {
 			mime_types: [{
-					title: "Image files",
-					extensions: "jpg,gif,png"
-				},
-				{
-					title: "html files",
-					extensions: "html"
-				}
-			],
-			max_file_size: '5mb', //最大只能上传10mb的文件
+				title: "Image files",
+				extensions: "jpg,gif,png"
+			}],
+			max_file_size: '5mb', //最大只能上传5mb的文件
 			prevent_duplicates: false //不允许选取重复文件
 		},
 		init: {
 			PostInit: function () { //上传初始化的操作函数
-				// document.getElementById('ossfile').innerHTML = '';
 			},
-			FilesAdded: function (up, files) { //文件上传前，就是打开文件对话框，选好文件之后触发
-				// getOssSign(files); 						//上传添加文件后的操作函数
-				// console.log(this.files)
-				// console.log(files[0]);
-				// console.log(files[0].type.split('/')[0]);
-				upLoadTools.imgToView(_this, up, files);
-
-				// ossUploadAddedAction(up, files);
+			FilesAdded: function (up, files) {
+				imgToView(_this, up, files);
+				getOssSign(files);
 			},
-			// BeforeUpload: function (up, file) { //上传之前的操作函数
-			// 	ossBeforeUploadAction(up, file);
-			// },
-			// UploadProgress: function (up, file) { //上传过程中的操作函数
-			// 	ossUploadProgressAction(up, file);
-			// },
-			// FileUploaded: function (up, file, info) { //上传之后的操作函数
-			// 	fileSucesse(file)
-			// 	uploader.refresh();
-			// },
+			BeforeUpload: function (up, file) {
+				ele('uploadImgTips').innerHTML = '开始上传图片'
+				ossBeforeUploadAction(up, file, _this);
+				return;
+			},
+			UploadProgress: function (up, file) { //上传过程中的操作函数
+				ele('uploadImgTips').innerHTML = '上传图片中……'
+			},
+			FileUploaded: function (up, file, info) { //上传之后的操作函数
+				imgfileSucesse(file)
+				ele('uploadImgTips').innerHTML = '图片上传完成！'
+				up.refresh();
+			},
 			Error: function (up, error) {
-				uploader.refresh();
+				up.refresh();
 			}
 		}
 	});
-	this.uploader.init();
-	// this.elements.addImg.addEventListener('click', function () {
-	// 	_this.elements.selectImage.click();
-	// })
-	// this.elements.importHtml.addEventListener('click', function () {
-	// 	_this.elements.selectHtml.click();
-	// })
-	// this.bindEvent(this.elements.selectImage, 'change', imgChange);
-	// this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
-	// this.bindEvent(this.elements.changeImage, 'change', editImg);
+	this.imgUploader.init();
+
+	//上传html文件
+	this.htmlUploader = new plupload.Uploader({
+		runtimes: 'html5,flash,silverlight,html4',
+		browse_button: 'upload',
+		url: 'http://oss.aliyuncs.com',
+		container: document.getElementById('container'),
+		filters: {
+			mime_types: [{
+				title: "html files",
+				extensions: "html"
+			}],
+			max_file_size: '5mb',
+			prevent_duplicates: false
+		},
+		init: {
+			PostInit: function () {
+
+			},
+			FilesAdded: function (up, files) {
+				getOssSign(files)
+				ossUploadAddedAction(up, files);
+			},
+			BeforeUpload: function (up, file) {
+				//上传html之前先上传图片；
+				ossBeforeUploadAction(up, file);
+			},
+			UploadProgress: function (up, file) {
+				ossUploadProgressAction(up, file);
+			},
+			FileUploaded: function (up, file, info) {
+				fileSucesse(file)
+				up.refresh();
+			},
+			Error: function (up, error) {
+				up.refresh();
+			}
+		}
+	});
+	this.htmlUploader.init();
+
+	this.bindEvent(ele('createHtml'), 'click', createHtml)
+
+	this.elements.importHtml.addEventListener('click', function () {
+		_this.elements.selectHtml.click();
+	})
+
+	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
 	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
 }
 
@@ -207,73 +252,25 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 
 
 //选择图片
-function createBlock(layout,url) {
-	var id = new Date().getTime(),
-		div = createEle('div'),
+function createBlock(layout, file, up) {
+	var div = createEle('div'),
 		eventbox = createEle('div'),
-		closebtn = createEle('i');
-	editbtn = createEle('i');
+		closebtn = createEle('i'),
+		editbtn = createEle('i'),
+		img = createEle('img'),
+		id = file.id;
 	div.id = id;
 	div.className = 'block';
-	div.appendChild(closebtn);
-	div.appendChild(editbtn);
-	div.appendChild(eventbox);
-	var img = createEle('img');
-	img.src = url;
+	layout.elements.layout.appendChild(div);
+
 	div.appendChild(img);
-
-	eventbox.className = 'eventbox';
-	setAttr(eventbox, 'data-handleName', 'addEventBox');
-	layout.setRespondEventElement(eventbox);
-	layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
-
-	closebtn.innerHTML = '×';
-	closebtn.className = 'close';
-
-	closebtn.addEventListener('click', function () {
-		ele(id).remove();
-	})
-
-	editbtn.innerHTML = '／';
-	editbtn.className = 'edit'
-	editbtn.addEventListener('click', function () {
-		layout.img = ele(id).querySelector('img');
-		// layout.elements.changeImage.click();
-		console.log('修改图片')
-	})
-
-	layout.elements.layout.appendChild(div);
-}
-
-
-//选择图片
-function imgChange(layout) {
-	var file = layout.elements.selectImage.files.item(0),
-		url = window.URL.createObjectURL(file),
-		type = file.type,
-		id = new Date().getTime(),
-		div = createEle('div'),
-		eventbox = createEle('div'),
-		closebtn = createEle('i');
-	editbtn = createEle('i');
-	div.id = id;
-	div.className = 'block';
+	div.appendChild(eventbox);
 	div.appendChild(closebtn);
 	div.appendChild(editbtn);
-	div.appendChild(eventbox);
-	img = createImg(url);
-	img.onload = function () {
-		var canvas = document.createElement("canvas");
-		canvas.width = img.width;
-		canvas.height = img.height;
-		var ctx = canvas.getContext("2d");
-		ctx.drawImage(img, 0, 0, img.width, img.height);
-		var dataURL = canvas.toDataURL(type);
-		img.src = dataURL;
-		img.onload = null;
-		div.appendChild(img);
-		layout.elements.selectImage.value = null;
-	}
+
+	img.src = file.imgsrc;
+	setAttr(img, 'data-isnew', true);
+	setAttr(img, 'data-name', file.name);
 
 	eventbox.className = 'eventbox';
 	setAttr(eventbox, 'data-handleName', 'addEventBox');
@@ -281,20 +278,24 @@ function imgChange(layout) {
 	layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
 
 	closebtn.innerHTML = '×';
-	closebtn.className = 'close';
-
+	closebtn.className = 'close close_block';
 	closebtn.addEventListener('click', function () {
-		ele(id).remove();
+		this.parentNode.remove();
+		delete layout.imgFilesJson[this.parentNode.id];
+		for (var i = 0; i < up.files.length; i++) {
+			if (up.files[i].id == this.parentNode.id) {
+				up.files.splice(i, 1);
+			}
+		}
 	})
 
 	editbtn.innerHTML = '／';
-	editbtn.className = 'edit'
+	editbtn.className = 'edit';
 	editbtn.addEventListener('click', function () {
-		layout.img = ele(id).querySelector('img');
-		layout.elements.changeImage.click();
+		layout.blockId = this.parentNode.id;
+		layout.elements.addImg.click();
 	})
-
-	layout.elements.layout.appendChild(div);
+	layout.imgFilesJson[file.id] = file;
 }
 
 function createImg(url) {
@@ -329,7 +330,7 @@ function htmlChange(layout) {
 	layout.elements.selectHtml.value = null;
 }
 
-//修改，初始化
+//导入修改，初始化
 function amendLayout(layout) {
 	var eventboxs = layout.elements.layout.querySelectorAll('.eventbox');
 	eventboxs.forEach(function (eventbox) {
@@ -340,15 +341,20 @@ function amendLayout(layout) {
 
 	var blocks = layout.elements.layout.querySelectorAll('.block');
 	blocks.forEach(function (block) {
-		var close = block.querySelector('.close');
+		var close = block.querySelector('.close_block');
 		var edit = block.querySelector('.edit');
-		var id = block.id;
 		close.addEventListener('click', function () {
-			ele(id).remove();
+			this.parentNode.remove();
+			delete layout.imgFilesJson[this.parentNode.id];
+			for (var i = 0; i < layout.imgUploader.files.length; i++) {
+				if (layout.imgUploader.files[i].id == this.parentNode.id) {
+					layout.imgUploader.files.splice(i, 1);
+				}
+			}
 		})
 		edit.addEventListener('click', function () {
-			layout.img = ele(id).querySelector('img');
-			layout.elements.changeImage.click();
+			layout.blockId = this.parentNode.id;
+			layout.elements.addImg.click();
 		})
 	})
 
@@ -365,26 +371,6 @@ function amendLayout(layout) {
 		})
 	})
 
-}
-
-//修改图片
-function editImg(layout) {
-	var file = layout.elements.changeImage.files.item(0),
-		url = window.URL.createObjectURL(file),
-		type = file.type,
-		img = layout.img;
-	img.src = url;
-	img.onload = function () {
-		var canvas = document.createElement("canvas");
-		canvas.width = img.width;
-		canvas.height = img.height;
-		var ctx = canvas.getContext("2d");
-		ctx.drawImage(img, 0, 0, img.width, img.height);
-		var dataURL = canvas.toDataURL(type);
-		img.src = dataURL;
-		img.onload = null;
-		layout.elements.changeImage.value = null;
-	}
 }
 
 //设置data-hasEvent属性，有这个属性的元素才能够响应定义的事件。
@@ -521,7 +507,7 @@ function addEventBox_mouseup(layout, e) {
 	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
 
 	addCloseBtn(layout, layout.spanBox);
-	addresizeBtn(layout, layout.spanBox) 
+	addresizeBtn(layout, layout.spanBox)
 
 	if (parseFloat(spanBoxStyle.width) < 10 || parseFloat(spanBoxStyle.height) < 10) {
 		layout.spanBox.remove();
@@ -562,7 +548,7 @@ function moveEventBox_mouseup(layout, e) {
 	layout.spanBoxPos = null;
 }
 
-function resetDatas(layout){
+function resetDatas(layout) {
 	layout.pos = {
 		start: null,
 		end: null
@@ -659,13 +645,11 @@ function Menu(id) {
 		});
 		this.ok.addEventListener('click', function () {
 			_this.data1 = _this.selectGroup.s1.select2('data');
-			// console.log(_this.data1)
 			if (_this.selectGroup.s2Id) {
 				_this.data2 = _this.selectGroup.s2.select2('data');
 				if (_this.data2[0].text != '') {
 					_this.data2[0].name = _this.data2[0].text;
 				}
-				// console.log(_this.data2)
 			} else {
 				_this.data2 = null;
 			}
@@ -685,7 +669,6 @@ function Menu(id) {
 				_this.span.removeAttribute('data-eventid2')
 				_this.span.removeAttribute('data-eventname2')
 			}
-			// console.log(_this.data1, _this.data2);
 			_this.close();
 		})
 	}
@@ -718,14 +701,14 @@ Menu.prototype.open = function (span) {
 			}
 		}
 	}
-	// console.log(val)
 	this.selectGroup = new SelectGroup(this.body, val);
 	this.span = span;
 	this.contBox.style.display = 'flex';
 	this.contBox.style.display = '-webkit-flex';
 }
 
-function createHtml() {
+function createHtml(layout) {
+	
 	var name = document.getElementById('fileName').value;
 	name = trim(name, 'g');
 	if (name == '') {
@@ -738,9 +721,21 @@ function createHtml() {
 
 	var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>' + title + '</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}</style></head><body>'
 	var filename = name + '.html'
-	var htmlbody = document.getElementById('pageView').innerHTML;
+	var htmlbody = document.getElementById('pageView').cloneNode(true);
+
+	var imgs = htmlbody.querySelectorAll('img[data-isnew=true]');
+
+	imgs.forEach(function (item) {
+		item.src = "https://f.tticar.com/h5-activity/" + name + '\/' + item.getAttribute('data-name');
+		setAttr(item, 'data-isnew', false);
+	})
+
+	htmlbody = htmlbody.innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
+	layout.filePath = name;
+	layout.imgUploader.start();
 	funDownload(html, filename);
+	htmlbody = null;
 }
 
 function trim(str, is_global) {

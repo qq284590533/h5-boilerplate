@@ -20,8 +20,6 @@
 			</div>
 			<div class="tools">
 				<div class="row">
-					<!-- <input id="selectImage" type="file" name="file" accept="image/png,image/jpg,image/jpeg" placeholder="">
-					<input id="changeImage" type="file" name="file" accept="image/png,image/jpg,image/jpeg" placeholder=""> -->
 					<div id="container">
 						<button id="addImg" class="btn">添加图片</button>
 					</div>
@@ -31,10 +29,11 @@
 					<p id="eventName"></p>
 				</div>
 				<div class="row">
-					<span>生成HTML</span>
+					<p id="uploadImgTips"></p>
+					<span>上传图片并生成HTML</span>
 					<div class="filename">
 						<input id="fileName" type="text" placeholder="输入文件名">
-						<button class="btn" onclick="createHtml()">确定</button>
+						<button id="createHtml" class="btn">确定</button>
 					</div>
 				</div>
 				<div class="row">
@@ -70,12 +69,11 @@
 	<script src="./js/plupload-2.1.2/js/plupload.full.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<script src="./js/ajax.js"></script>
-	<!-- <script src="./js/upload.js"></script> -->
+	<script src="./js/uploadTools.js"></script>
 	<script src="./js/main.js"></script>
 	<script>
 		window.onload = function () {
 			var layout = new Layout();
-			// new initPlupload();
 		}
 	</script>
 </body>
