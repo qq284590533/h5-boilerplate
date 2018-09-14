@@ -177,10 +177,10 @@ Layout.prototype.init = function () {
 				ossBeforeUploadAction(up, file, _this);
 				return;
 			},
-			UploadProgress: function (up, file) { //上传过程中的操作函数
+			UploadProgress: function (up, file) {
 				ele('uploadImgTips').innerHTML = '上传图片中……'
 			},
-			FileUploaded: function (up, file, info) { //上传之后的操作函数
+			FileUploaded: function (up, file, info) {
 				imgfileSucesse(file)
 				ele('uploadImgTips').innerHTML = '图片上传完成！'
 				up.refresh();
@@ -215,7 +215,6 @@ Layout.prototype.init = function () {
 				ossUploadAddedAction(up, files);
 			},
 			BeforeUpload: function (up, file) {
-				//上传html之前先上传图片；
 				ossBeforeUploadAction(up, file);
 			},
 			UploadProgress: function (up, file) {

@@ -361,3 +361,22 @@ ul{
 	padding-right: 10px;
 	float: left;
 }
+
+#content {
+	padding: 20px 10px;
+}
+
+#content p,#content h3,#content h4,#content h5,#content h6,#content h2,#content h1{
+	margin: 10px 0;
+    line-height: 1.5;
+}
+
+#content table{
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+}
+#content table td, #content table th {
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    padding: 3px 5px;
+}

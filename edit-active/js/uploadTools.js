@@ -97,6 +97,7 @@ function calculate_object_name(file,layout){
 	}
 	signParams.fileName = g_object_name;
 	fileJson[file.id] = signParams.fileServerUrl;
+	console.log(signParams.fileServerUrl)
 	return g_object_name;
 }
 

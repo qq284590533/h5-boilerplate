@@ -5,9 +5,8 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>活动页面编辑</title>
+	<title>公告页面编辑</title>
 	<link rel="stylesheet" href="./css/main.css">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -15,18 +14,12 @@
 		<div class="container">
 			<div class="phone">
 				<div id="pageView" class="scroll">
-					<div id="layout"></div>
+					<div id="content"></div>
 				</div>
 			</div>
 			<div class="tools">
 				<div class="row">
-					<div id="container">
-						<button id="addImg" class="btn">添加图片</button>
-					</div>
-				</div>
-				<div class="row">
-					<span>当前点击事件：</span>
-					<p id="eventName"></p>
+					<div id="editBox"></div>
 				</div>
 				<div class="row">
 					<p id="uploadImgTips"></p>
@@ -43,39 +36,19 @@
 					<div id="ossfile"></div>
 				</div>
 				<div class="row">
-					<input id="selectHtml" type="file" accept="text/html">
-				</div>
-			</div>
-		</div>
-		<div id="imgBox"></div>
-	</div>
-	<div id="eventMenu">
-		<div class="container">
-			<div class="content">
-				<div class="header">
-					<h3>选择添加事件</h3>
-				</div>
-				<div class="body">
-					<div class="select-box"></div>
-				</div>
-				<div class="footer">
-					<button id="ok" class="btn">确定</button>
-					<button id="cancel" class="btn cancel">取消</button>
+					<input id="selectHtml" type="file" accept="text/html" onchange="htmlChange()">
 				</div>
 			</div>
 		</div>
 	</div>
 	<script src="./js/jquery-1.9.1.min.js"></script>
 	<script src="./js/plupload-2.1.2/js/plupload.full.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<script src="https://unpkg.com/wangeditor/release/wangEditor.min.js"></script>
-	<script src="./js/ajax.js"></script>
 	<script src="./js/uploadTools.js"></script>
 	<script src="./js/editor.js"></script>
-	<script src="./js/main.js"></script>
 	<script>
 		window.onload = function () {
-			var layout = new Layout();
+			// var editor = editInit();
 		}
 	</script>
 </body>
