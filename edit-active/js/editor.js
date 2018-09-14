@@ -19,7 +19,8 @@ function editInit() {
     var E = window.wangEditor;
     editor = new E('#editBox');
     editor.customConfig.zIndex = 100;
-    editor.customConfig.uploadImgShowBase64 = true
+    editor.customConfig.uploadImgShowBase64 = true;
+    editor.customConfig.onchangeTimeout = 1000;
     editor.customConfig.onchange = function () {
         eidtOnChange(editor, upload);
     }
@@ -159,16 +160,23 @@ function creatBase64Img(editor, files, up) {
 
 function eidtOnChange(editor, up) {
     ele('content').innerHTML = editor.txt.html();
-
+    var imgFile = [];
     //删除图片时修改上传图片列表
     var imgs = ele('content').querySelectorAll('img[data-isnew=true]');
     jsonData.imgNumNow = imgs.length;
-    if(jsonData.imgNumNow==jsonData.imgNumOld){
-        jsonData.imgNumOld--
+    if(jsonData.imgNumNow<=jsonData.imgNumOld){
+        jsonData.imgNumOld=jsonData.imgNumNow;
+        jsonData.imgNumOld--;
+        // console.log(jsonData)
         imgs.forEach(function(item){
-            console.log(item.id)
-            console.log(imgUploader.files)
+            for(var i=0; i<imgUploader.files.length; i++){
+                if(imgUploader.files[i].id==item.id){
+                    imgFile.push(imgUploader.files[i]);
+                }
+            }
         })
+        imgUploader.files = imgFile;
+        // console.log(imgUploader.files)
     }
 }
 
