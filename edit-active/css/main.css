@@ -29,9 +29,11 @@ ul{
     background-color: rgba(216, 216, 216, 0.5);
 } */
 .wrapper{
+	position: relative;
 	width: 1000px;
 	height: 100%;
 	margin: 0 auto;
+	z-index: 1;
 }
 .container{
 	width: 100%;
