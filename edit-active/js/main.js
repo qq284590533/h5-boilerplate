@@ -644,6 +644,13 @@ function Menu(id) {
 		});
 		this.ok.addEventListener('click', function () {
 			_this.data1 = _this.selectGroup.s1.select2('data');
+			if(_this.selectGroup.h5Path){
+				var h5Path = _this.selectGroup.h5Path;
+				setAttr(_this.span, 'data-h5', h5Path);
+			}else{
+				_this.span.removeAttribute('data-h5');
+				_this.span.removeAttribute('data-eventname2')
+			}
 			if (_this.selectGroup.s2Id) {
 				_this.data2 = _this.selectGroup.s2.select2('data');
 				if (_this.data2[0].text != '') {
@@ -667,6 +674,9 @@ function Menu(id) {
 			} else {
 				_this.span.removeAttribute('data-eventid2')
 				_this.span.removeAttribute('data-eventname2')
+				if(_this.selectGroup.h5Path){
+					setAttr(_this.span, 'data-eventname2', _this.selectGroup.h5PageName);
+				}
 			}
 			_this.close();
 		})
@@ -702,6 +712,10 @@ Menu.prototype.open = function (span) {
 	}
 	this.selectGroup = new SelectGroup(this.body, val);
 	this.span = span;
+	
+	if(this.selectGroup.input&&this.span.getAttribute('data-h5')){
+		this.selectGroup.input.value = this.selectGroup.h5Path = this.span.getAttribute('data-h5');
+	}
 	this.contBox.style.display = 'flex';
 	this.contBox.style.display = '-webkit-flex';
 }
@@ -716,7 +730,8 @@ function createHtml(layout) {
 	}
 	var title = name;
 
-	var htmlfoot = '<div id="browser"></div><script>window.onload = function () {var browser = document.getElementById("browser");browser.addEventListener("click", function () {this.style.display = "none";});function is_weixn_qq() {var ua = navigator.userAgent.toLowerCase();if (ua.match(/MicroMessenger/i) == "micromessenger") {return true;}return false;}var spanList = document.querySelectorAll("span[data-hasevent]");for (var i = 0; i < spanList.length; i++) {var item = spanList[i];(function (item) {item.addEventListener("click", function (e) {if (is_weixn_qq()) {browser.style.display = "block";return;}var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = id1;if (id2) {id = id1 + "/" + id2;}window.location.href = "tticarstorecall://" + id;})})(item)}}</script></body></html>';
+	var htmlfoot = '<div id="browser"></div><script>function urlJson() {var href = window.location.href;var ksbz = href.indexOf("?");var hrefStr = href.substr(ksbz + 1);var splitStr = hrefStr.split("&");var urlObj = {};for (var i = 0; i < splitStr.length; i++) {urlObj[splitStr[i].split("=")[0]] = splitStr[i].split("=")[1];}return urlObj;}window.onload = function () {var urlObj = urlJson();var isShare = urlObj.isShare || false;var browser = document.getElementById("browser");browser.addEventListener("click", function () {this.style.display = "none";});function is_weixn_qq() {var ua = navigator.userAgent.toLowerCase();if (ua.match(/MicroMessenger/i) == "micromessenger" || ua.match(/QQ/i) == "qq") {return true;}return false;}var spanList = document.querySelectorAll("span[data-hasevent]");for (var i = 0; i < spanList.length; i++) {var item = spanList[i]; (function (item) {item.addEventListener("click", function (e) {var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = id1;if (isShare=="true") {if (is_weixn_qq()) {browser.style.display = "block";return;} else {if (id == "2") {window.location.href = this.getAttribute("data-h5");return;}}}if (id == "2") {window.location.href = "tticarstorecall://" + id + "/" + this.getAttribute("data-h5");return;}if (id2) {id = id1 + "/" + id2;} window.location.href = "tticarstorecall://" + id;})})(item)}}</script></body></html>';
+	
 
 	var htmlhead = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>' + title + '</title><style>*{box-sizing: border-box;padding: 0;margin: 0;}html{height: 100%;}body{height: 100%;padding: 0;margin: 0;}#layout{position: relative;width: 100%;overflow: hidden;z-index:1;}#layout img{width: 100%;float: left;}#layout .block{position: relative;width: 100%;overflow: hidden;} #layout i{display: none;}#layout .eventbox{position: absolute;left: 0;top: 0;width: 100%;height: 100%;z-index: 9999;}#layout .eventbox span{position: absolute;display: block;}#browser{position: fixed;z-index: 1;top: 0;left: 0;display: none;width: 100%;height: 100%;background-image: url(https://f.tticar.com/h5-activity/browser/browser.png);background-size: cover}</style></head><body>';
 
