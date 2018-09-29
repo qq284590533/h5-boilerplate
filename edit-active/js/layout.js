@@ -337,19 +337,20 @@ function amendLayout(layout) {
 		})
 	})
 
-	var spans = layout.elements.layout.querySelectorAll('span');
-	spans.forEach(function (span) {
-		layout.bindEvent(span, 'mousemove', layout.onMouseMove);
-		layout.bindEvent(span, 'mouseup', layout.onMouseUp);
-		layout.bindEvent(span, 'contextmenu', contextmenu);
-		layout.bindEvent(span, 'mouseover', mouseover);
-		layout.bindEvent(span, 'mouseout', mouseout);
-		var close = span.querySelector('.close');
+	var eventBoxList = layout.elements.layout.querySelectorAll('.eventbox .hasevent');
+	eventBoxList.forEach(function (eventBox) {
+		layout.bindEvent(eventBox, 'mousemove', layout.onMouseMove);
+		layout.bindEvent(eventBox, 'mouseup', layout.onMouseUp);
+		layout.bindEvent(eventBox, 'contextmenu', contextmenu);
+		layout.bindEvent(eventBox, 'mouseover', mouseover);
+		layout.bindEvent(eventBox, 'mouseout', mouseout);
+		var close = eventBox.querySelector('.close');
 		close.addEventListener('click', function () {
-			span.remove();
+			eventBox.remove();
 		})
 	})
 
+	console.log(window.mslide);
 }
 
 //设置data-hasEvent属性，有这个属性的元素才能够响应定义的事件。
