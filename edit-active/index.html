@@ -24,7 +24,7 @@
 				<div class="row">
 					<div id="container">
 						<button id="addImg" class="btn">添加图片</button>
-						<button id="addSlide" class="btn" data-popup="addSlideBox">添加轮播</button>
+						<!-- <button id="addSlide" class="btn" data-popup="addSlideBox">添加轮播</button> -->
 					</div>
 				</div>
 				<div class="row">
@@ -35,6 +35,7 @@
 					<p id="uploadImgTips"></p>
 					<span>上传图片并生成HTML</span>
 					<div class="filename">
+						<input id="titleName" type="text" placeholder="输入标题名"><br>
 						<input id="fileName" type="text" placeholder="输入文件名">
 						<button id="createHtml" class="btn">确定</button>
 					</div>
@@ -125,7 +126,7 @@
 		window.onload = function () {
 			popup = new Popup('popup').init();
 			var layout = new Layout();
-			new MSlide(layout, popup);
+			// new MSlide(layout, popup);
 		}
 	</script>
 </body>

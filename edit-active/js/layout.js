@@ -612,12 +612,13 @@ function contextmenu(layout, e) {
 
 function createHtml(layout) {
 	var name = document.getElementById('fileName').value;
+	var title = document.getElementById('titleName').value;
 	name = trim(name, 'g');
-	if (name == '') {
-		alert('文件名不能为空！')
+	title = trim(title, 'g');
+	if (name == ''||title=='') {
+		alert('文件名和标题不能为空！')
 		return
 	}
-	var title = name;
 
 	var htmlfoot = '<div id="browser"></div><script>function urlJson() {var href = window.location.href;var ksbz = href.indexOf("?");var hrefStr = href.substr(ksbz + 1);var splitStr = hrefStr.split("&");var urlObj = {};for (var i = 0; i < splitStr.length; i++) {urlObj[splitStr[i].split("=")[0]] = splitStr[i].split("=")[1];}return urlObj;}window.onload = function () {var urlObj = urlJson();var isShare = urlObj.isShare || false;var browser = document.getElementById("browser");browser.addEventListener("click", function () {this.style.display = "none";});function is_weixn_qq() {var ua = navigator.userAgent.toLowerCase();if (ua.match(/MicroMessenger/i) == "micromessenger" || ua.match(/QQ/i) == "qq") {return true;}return false;}var spanList = document.querySelectorAll("span[data-hasevent]");for (var i = 0; i < spanList.length; i++) {var item = spanList[i]; (function (item) {item.addEventListener("click", function (e) {var id1 = item.getAttribute("data-eventid1");var id2 = item.getAttribute("data-eventid2");id = id1;if (isShare=="true") {if (is_weixn_qq()) {browser.style.display = "block";return;} else {if (id == "2") {window.location.href = this.getAttribute("data-h5");return;}}}if (id == "2") {window.location.href = "tticarstorecall://" + id + "/" + this.getAttribute("data-h5");return;}if (id2) {id = id1 + "/" + id2;} window.location.href = "tticarstorecall://" + id;})})(item)}}</script></body></html>';
 
