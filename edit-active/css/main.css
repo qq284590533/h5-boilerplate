@@ -15,9 +15,9 @@ ul{
 	list-style: none;
 }
 .scroll::-webkit-scrollbar{
-    width: 0px;
+    width: 5px;
 }
-/* .scroll::-webkit-scrollbar-thumb{
+.scroll::-webkit-scrollbar-thumb{
     border-radius: 5px;
     background-color: rgba(201, 201, 201, 0.719);
 }
@@ -27,7 +27,7 @@ ul{
 .scroll::-webkit-scrollbar-track{
     border-radius: 5px;
     background-color: rgba(216, 216, 216, 0.5);
-} */
+}
 .wrapper{
 	position: relative;
 	width: 1000px;
@@ -257,60 +257,6 @@ ul{
 	background: rgb(255, 104, 104);
 }
 
-#eventMenu {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	display: none;
-	justify-content: center;
-	align-items: center;
-	background: rgba(0, 0, 0, 0.5);
-	z-index: 1;
-}
-#eventMenu .container{
-	width: 300px;
-	height: 220px;
-	border-radius: 5px;
-	background: #fff;
-	box-shadow: 5px 5px 5px #666;
-	overflow: hidden;
-}
-#eventMenu .content{
-	position: relative;
-	height: 100%;
-}
-#eventMenu .header{
-	position: absolute;
-	width: 100%;
-	top: 0;
-	left: 0;
-}
-#eventMenu h3{
-	font-size: 18px;
-	text-align: center;
-	line-height: 40px;
-	color: #333;
-	border-bottom: 1px solid #ddd;
-}
-#eventMenu .body{
-	height: 100%;
-	padding: 60px 20px;
-}
-
-#eventMenu .footer{
-	position: absolute;
-	width: 100%;
-	bottom: 0;
-	padding: 10px 0 10px;
-	text-align: center;
-}
-
-#eventMenu .content .footer .btn{
-	margin: 0 20px;
-}
-
 #eventMenu .select2-container{
 	margin-bottom: 10px;
 }
@@ -387,8 +333,150 @@ ul{
     border-top: 1px solid #ccc;
     border-left: 1px solid #ccc;
 }
+
 #content table td, #content table th {
     border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
     padding: 3px 5px;
+}
+
+.add-slide-box {
+	font-size: 14px;
+}
+
+.add-slide-box input[type='radio']{
+	margin-right: 20px;
+	cursor: pointer;
+}
+
+.add-slide-box label{
+	cursor: pointer;
+}
+
+.add-slide-box input[type='number']{
+	width: 50px;
+	margin-right: 4px;
+}
+
+#addSlidePage{
+	margin-top: 20px;
+	border: 1px dashed #aaa;
+	border-radius: 4px;
+	height: 50px;
+	line-height: 50px;
+	text-align: center;
+	color: #999;
+	cursor: pointer;
+}
+
+.autoplay div{
+	display: inline-block;
+	margin-right: 20px;
+}
+.add-slide-box .item{
+	margin: 10px;
+	min-height: 24px;
+	line-height: 24px;
+}
+.autoplay .delay{
+	display: none;
+}
+
+#slidePage .imgbox{
+	position: relative;
+	width: 100%;
+	padding: 10px 20px;
+	border-bottom: 1px dotted #ddd;
+	overflow: hidden;
+}
+
+#slidePage .imgbox .delete{
+	position: absolute;
+	left: 0;
+	top: 50%;
+	margin-top: -8px;
+	display: block;
+	width: 16px;
+	height: 16px;
+	line-height: 15px;
+	border-radius: 100%;
+	background: rgb(255, 120, 120);
+	text-align: center;
+	color: #fff;
+	font-style: normal;
+	cursor: pointer;
+}
+
+.slide-item img{
+	width: 100%;
+	float: left;
+}
+
+.slide-item{
+	position: relative;
+	float: left;
+	width: 100px;
+	border-radius: 4px;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+.slide-item span{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#slidePage .imgbox .addeventbtn,#slidePage .imgbox .deleventbtn{
+	margin: 0;
+	position: absolute;
+	right: 0;
+	top: 50%;
+	margin-top: -15px;
+}
+#slidePage .imgbox .deleventbtn{
+	display: none;
+	background: rgb(255, 120, 120);
+}
+#slidePage .imgbox .deleventbtn:hover{
+	background: rgb(255, 104, 104);
+}
+
+#slidePage .imgbox .event-name{
+	float: left;
+    margin-left: 20px;
+	width: 220px;
+	font-size: 12px;
+	line-height: 18px;
+	color: #186bff;
+	cursor: pointer;
+	display: none;
+}
+
+#slidePage .imgbox .select .btn{
+    width: 50px;
+    font-size: 12px;
+    height: 28px;
+    margin: 0;
+    margin-bottom: 10px;
+}
+
+#slidePage .imgbox .select{
+	position: absolute;
+    width: 300px;
+	right: 0;
+	display: none;
+}
+#slidePage .imgbox .select .select-box{
+	width: 215px;
+    float: left;
+}
+#slidePage .imgbox .select .btn-box{
+	float: right;
+	width: 65px;
+}
+#slidePage .select2-container {
+    margin-bottom: 10px;
 }

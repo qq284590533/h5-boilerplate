@@ -8,6 +8,8 @@
 	<title>活动页面编辑</title>
 	<link rel="stylesheet" href="./css/main.css">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="./js/popup/popup.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.1/css/swiper.min.css">
 </head>
 
 <body>
@@ -22,6 +24,7 @@
 				<div class="row">
 					<div id="container">
 						<button id="addImg" class="btn">添加图片</button>
+						<button id="addSlide" class="btn" data-popup="addSlideBox">添加轮播</button>
 					</div>
 				</div>
 				<div class="row">
@@ -49,32 +52,80 @@
 		</div>
 		<div id="imgBox"></div>
 	</div>
-	<div id="eventMenu">
-		<div class="container">
-			<div class="content">
-				<div class="header">
-					<h3>选择添加事件</h3>
-				</div>
-				<div class="body">
+	<div class="c-popup" id="popup">
+		<div class="c-shade"></div>
+		<div class="c-container">
+			<div class="title"></div>
+			<div class="body scroll">
+
+				<div class="c-content event-menu" id="eventMenu">
 					<div class="select-box"></div>
 				</div>
-				<div class="footer">
-					<button id="ok" class="btn">确定</button>
-					<button id="cancel" class="btn cancel">取消</button>
+
+				<div class="c-content add-slide-box" id="addSlideBox">
+					<ul class="form">
+						<li class="item scrolltype">
+							<label>滚动类型：</label>
+							<label for="typeSlide">轮播</label>
+							<input id="typeSlide" checked type="radio" name="scrolltype" value="slide">
+							<label for="typeScroll">横向滚动</label>
+							<input id="typeScroll" type="radio"name="scrolltype" value="scroll">
+						</li>
+						<li class="item autoplay">
+							<div>
+								<label for="autoplay">自动切换</label>
+								<input id="autoplay" type="checkbox">
+							</div>
+							<div class="delay">
+								<label for="delay">自动切换间隔:</label>
+								<input id="delay" type="number" value="3000">ms
+							</div>
+						</li>
+						<li class="item"  id="slidePage">
+						</li>
+						<div id="addSlideContainer">
+							<li id="addSlidePage" class="item" title="添加页">+</li>
+						</div>
+					</ul>
 				</div>
+
+			</div>
+			<div class="footer">
+				<button id="popupOkBtn" class="btn ok">确定</button>
+				<button id="popupCancelBtn" class="btn cancel">取消</button>
 			</div>
 		</div>
 	</div>
-	<script src="./js/jquery-1.9.1.min.js"></script>
+	<script src="./js/jquery-1.11.3.min.js"></script>
 	<script src="./js/plupload-2.1.2/js/plupload.full.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-	<script src="https://unpkg.com/wangeditor/release/wangEditor.min.js"></script>
-	<script src="./js/ajax.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.1/js/swiper.min.js"></script>
+
+	<!-- 工具类方法 -->
+	<script src="./js/tools.js"></script>
+
+	<!-- 弹窗 -->
+	<script src="./js/popup/popup.js"></script>
+
+	<!-- 下拉框组件封装 -->
+	<script src="./js/selectGroup.js"></script>
+
+	<!-- 上传组件工具类方法 -->
 	<script src="./js/uploadTools.js"></script>
-	<script src="./js/main.js"></script>
+
+	<!-- 添加事件弹窗 -->
+	<script src="./js/menu.js"></script>
+
+	<!-- 布局 -->
+	<script src="./js/layout.js"></script>
+
+	<!-- 添加轮播 -->
+	<script src="./js/m_slide.js"></script>
 	<script>
 		window.onload = function () {
+			popup = new Popup('popup').init();
 			var layout = new Layout();
+			new MSlide(layout, popup);
 		}
 	</script>
 </body>

@@ -1,10 +1,3 @@
-function ele(id) {
-    return document.getElementById(id);
-}
-
-function setAttr(element, attrname, value) {
-    element.setAttribute(attrname, value);
-}
 
 var imgUploader, editor, jsonData;
 jsonData = {
@@ -20,7 +13,7 @@ function editInit() {
     editor = new E('#editBox');
     editor.customConfig.zIndex = 100;
     editor.customConfig.uploadImgShowBase64 = true;
-    editor.customConfig.onchangeTimeout = 1000;
+    editor.customConfig.onchangeTimeout = 600;
     editor.customConfig.onchange = function () {
         eidtOnChange(editor, upload);
     }
@@ -137,7 +130,9 @@ function creatBase64Img(editor, files, up) {
             var fr = new mOxie.FileReader();
             fr.onload = function () {
                 file.imgsrc = fr.result;
-                editor.cmd.do('insertHtml', '<img id='+file.id+' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/>')
+				editor.cmd.do('insertHtml', '<img id='+file.id+' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/>');
+				
+
                 jsonData.imgNumOld = jsonData.imgNumNow;
                 jsonData.imgNumNow++;
             }
@@ -244,27 +239,3 @@ function createHtml(jsonData) {
     funDownload(html, filename);
     htmlbody = null;
 }
-
-function trim(str, is_global) {
-    var result;
-    result = str.replace(/(^\s+)|(\s+$)/g, "");
-    if (is_global.toLowerCase() == "g") {
-        result = result.replace(/\s/g, "");
-    }
-    return result;
-}
-
-// 下载文件方法
-function funDownload(content, filename) {
-    var eleLink = document.createElement('a');
-    eleLink.download = filename;
-    eleLink.style.display = 'none';
-    // 字符内容转变成blob地址
-    var blob = new Blob([content]);
-    eleLink.href = URL.createObjectURL(blob);
-    // 触发点击
-    document.body.appendChild(eleLink);
-    eleLink.click();
-    // 然后移除
-    document.body.removeChild(eleLink);
-};
