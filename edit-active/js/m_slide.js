@@ -5,7 +5,6 @@
 function MSlide(layout, popup) {
 	this.layout = layout;
 	this.popup = popup;
-	this.pageNum = 2;
 	this.name = 'MSlide';
 	this.openBtn = document.getElementById('addSlide');
 	this.popupModelId = '#addSlideBox';
@@ -16,15 +15,14 @@ function MSlide(layout, popup) {
 	this.addbtn = ele('addSlidePage');
 	this.delayDiv = this.popupModel.querySelector('.delay');
 	this.delay = ele('delay');
-	this.delayVal = 3000;
 	this.isAutoPlay = false;
 	this.slidePage = ele('slidePage');
 	this.addEventBtn = null;
-	this.slideData=[];
+	this.slideData = [];
 	this.imgFilesJson = layout.imgFilesJson;
 	this.files = layout.imgUploader.files;
 	this.imgbox = null;
-	this.slidePageObj = {};
+	this.imgIdList = [];
 	this.init();
 }
 
@@ -47,7 +45,7 @@ MSlide.prototype.init = function () {
 			PostInit: function () { //上传初始化的操作函数
 			},
 			FilesAdded: function (up, files) {
-				_this.addSlideItem(up,files);
+				_this.addSlideItem(up, files);
 			},
 			Error: function (up, error) {
 				up.refresh();
@@ -55,10 +53,10 @@ MSlide.prototype.init = function () {
 		}
 	});
 	this.imgUploader.init();
-	this.openBtn.addEventListener('click',function (){
+	this.openBtn.addEventListener('click', function () {
 		_this.popup.open({
-			width:'500px',
-			height:'400px',
+			width: '500px',
+			height: '400px',
 			name: _this.name,
 			id: _this.popupModelId,
 			title: '添加滚动组件',
@@ -68,48 +66,76 @@ MSlide.prototype.init = function () {
 		});
 	})
 
-	for(var i=0; i<this.scrollTypeInput.length; i++){
+	for (var i = 0; i < this.scrollTypeInput.length; i++) {
 		var item = this.scrollTypeInput[i];
-		(function(item){
-			item.addEventListener('change',function(){
+		(function (item) {
+			item.addEventListener('change', function () {
 				_this.scrollType = document.querySelector('input[name="scrolltype"]:checked').value;
-				if(_this.scrollType=='slide'){
+				if (_this.scrollType == 'slide') {
 					_this.autoplay.style.display = 'block';
-				}else{
+				} else {
 					_this.autoplay.style.display = 'none';
 				}
 			})
 		})(item)
 	}
 
-	this.autoplay.querySelector('input').addEventListener('change',function(){
+	this.autoplay.querySelector('input').addEventListener('change', function () {
 		_this.isAutoPlay = this.checked
 		console.log(_this.isAutoPlay);
-		if(_this.isAutoPlay){
+		if (_this.isAutoPlay) {
 			_this.delayDiv.style.display = 'inline-block';
-		}else{
+		} else {
 			_this.delayDiv.style.display = 'none';
 		}
 	})
 
 	//添加轮播取消重置轮播表单；
-	this.popup.popupCloseCallbackHandle[this.name] = function(){
-		_this.reset()
+	this.popup.popupCloseCallbackHandle[this.name] = function () {
+		// if(!_this.isOkBtnClick){
+
+		// }
+		console.log(_this.isOkBtnClick);
+		if (_this.isOkBtnClick) {
+			console.log('确定')
+		} else {
+			console.log('取消')
+			_this.delUpLoaderImgList(_this.imgIdList)
+		}
+		_this.reset();
 	}
 
 	//添加轮播确定按钮执行事件
-	this.popup.okClickHandle[this.name] = function(){
+	this.popup.okClickHandle[this.name] = function () {
 		console.log(_this.scrollType);
 		console.log('添加轮播确定！');
+		_this.createSlideBox()
 	}
-	
+
 }
 
 MSlide.prototype.reset = function () {
 	console.log('添加轮播弹窗关闭')
+	this.scrollType = 'slide';
+	for (var i = 0; i < this.scrollTypeInput.length; i++) {
+		if (this.scrollTypeInput[i].value == 'slide') {
+			this.scrollTypeInput[i].checked = true;
+		}
+	}
+	this.autoplay.style.display = 'block';
+	ele('autoplay').checked = false;
+	this.isAutoPlay = false;
+	this.delayDiv.style.display = 'none';
+	this.delay.value = 3000;
+	this.slidePage.innerHTML = '';
+	this.addEventBtn = null;
+	this.slideData = [];
+	this.imgIdList = [];
+	this.imgbox = null;
+	this.isOkBtnClick = false;
 }
 
-MSlide.prototype.addSlideItem = function(up,files){
+MSlide.prototype.addSlideItem = function (up, files) {
 	var _this = this;
 	plupload.each(files, function (file) {
 		if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
@@ -133,67 +159,94 @@ MSlide.prototype.addSlideItem = function(up,files){
 	});
 }
 
-MSlide.prototype.imgChangeHandle = function(file){
+MSlide.prototype.imgChangeHandle = function (file) {
 	this.files.push(file);
+	this.imgIdList.push(file.id);
 	this.imgUploader.files = [];
-	if(this.imgbox){
+	if (this.imgbox) {
 		var id = this.imgbox.id;
 		console.log('修改');
 		this.editSlideItme(file);
-		for(var i=0; i<this.files.length; i++){
-			if(this.files[i].id==id){
-				this.files.splice(i, 1);
-				break;
-			}
-		}
+		this.delImgList(id);
 		this.imgbox = null;
-	}else{
+	} else {
 		console.log('新建');
 		this.createSlideItme(file);
 	}
-	// this.addItemToLayoutUploader(file);
+
 	console.log(this.files);
+	console.log(this.imgIdList);
+}
+MSlide.prototype.delImgList = function(id){
+	for (var i = 0; i < this.files.length; i++) {
+		if (this.files[i].id == id) {
+			this.files.splice(i, 1);
+			break;
+		}
+	}
+
+	for (var i = 0; i < this.imgIdList.length; i++) {
+		if (this.imgIdList[i]== id) {
+			this.imgIdList.splice(i, 1);
+			break;
+		}
+	}
+	console.log(this.files);
+	console.log(this.imgIdList);
 }
 
-MSlide.prototype.createSlideItme = function(file){
+MSlide.prototype.delUpLoaderImgList = function(imgIdList){
+	for(var i=0; i<imgIdList.length; i++){
+		console.log(id)
+		var id = imgIdList[i];
+		for(var x = 0; x < this.files.length; x++){
+			if (this.files[x].id == id) {
+				this.files.splice(x, 1);
+			}
+		}
+	};
+}
+
+
+MSlide.prototype.createSlideItme = function (file) {
 	var _this = this;
 	var imgbox = createEle('div');
 	imgbox.id = file.id;
 	imgbox.className = 'imgbox';
-	imgbox.innerHTML = '<i class="delete" title="删除">-</i><div class="slide-item"><img class="slideimg" src="'+file.imgsrc+'" data-isnew="true" data-name="'+file.name+'" alt=""><span></span></div><p class="event-name" title="点击修改"></p><button class="btn deleventbtn">删除事件</button><button class="btn addeventbtn">添加事件</button><div class="select"><div id="slideEvent" class="select-box"></div><div class="btn-box"><button class="btn ok">确定</button><button class="btn cancel">取消</button></div></div>'
+	imgbox.innerHTML = '<i class="delete" title="删除">-</i><div class="slide-item" data-imgid="' + file.id + '"><img class="slideimg" src="' + file.imgsrc + '" data-isnew="true" data-name="' + file.name + '" alt=""></div><p class="event-name" title="点击修改"></p><button class="btn deleventbtn">删除事件</button><button class="btn addeventbtn">添加事件</button><div class="select"><div id="slideEvent" class="select-box"></div><div class="btn-box"><button class="btn ok">确定</button><button class="btn cancel">取消</button></div></div>'
 	imgbox.id = file.id;
 	this.slidePage.appendChild(imgbox);
 
 	var eventName = imgbox.querySelector('.event-name');
 	var delEventBtn = imgbox.querySelector('.deleventbtn');
-	var eventSpan = imgbox.querySelector('span');
+	var eventBox = imgbox.querySelector('.slide-item');
 
 	var slideItem = imgbox.querySelector('.slide-item');
-	slideItem.addEventListener('click',function(){
+	slideItem.addEventListener('click', function () {
 		_this.slideItemClick(imgbox);
 	})
 
 	var deleteSlideBtn = imgbox.querySelector('.delete');
-	deleteSlideBtn.addEventListener('click',function(){
+	deleteSlideBtn.addEventListener('click', function () {
 		_this.deleteSlide(imgbox);
 	})
 
 	var addEventBtn = imgbox.querySelector('.addeventbtn');
-	addEventBtn.addEventListener('click',function(){
+	addEventBtn.addEventListener('click', function () {
 		this.style.display = 'none';
 		_this.addEventHandle(imgbox);
 	})
 
 	var selectBox = imgbox.querySelector('.select');
 	var addEventOkBtn = selectBox.querySelector('.ok');
-	addEventOkBtn.addEventListener('click',function(){
+	addEventOkBtn.addEventListener('click', function () {
 		selectBox.style.display = 'none';
-		_this.addEventOkBtnHandle(imgbox,eventSpan);
+		_this.addEventOkBtnHandle(eventBox);
 		_this.selectGroup.destroy();
 		_this.selectGroup = null;
-		if(eventSpan.className=='hasevent'){
-			var text1 = eventSpan.getAttribute('data-eventname1');
-			var text2 = eventSpan.getAttribute('data-eventname2');
+		if (eventBox.classList.contains('hasevent')) {
+			var text1 = eventBox.getAttribute('data-eventname1');
+			var text2 = eventBox.getAttribute('data-eventname2');
 			if (text1) {
 				eventName.innerHTML = text1
 				if (text2) {
@@ -202,11 +255,11 @@ MSlide.prototype.createSlideItme = function(file){
 			}
 			eventName.style.display = 'block';
 			delEventBtn.style.display = 'block';
-		}else{
+		} else {
 			addEventBtn.style.display = 'block';
 		}
 	})
-	eventName.addEventListener('click',function(){
+	eventName.addEventListener('click', function () {
 		this.style.display = 'none';
 		delEventBtn.style.display = 'none';
 		_this.addEventHandle(imgbox);
@@ -214,24 +267,24 @@ MSlide.prototype.createSlideItme = function(file){
 
 
 	var addEventCancelBtn = selectBox.querySelector('.cancel');
-	addEventCancelBtn.addEventListener('click',function(){
+	addEventCancelBtn.addEventListener('click', function () {
 		selectBox.style.display = 'none';
-		if(eventSpan.className=='hasevent'){
+		if (eventBox.classList.contains('hasevent')) {
 			eventName.style.display = 'block';
 			delEventBtn.style.display = 'block';
-		}else{
+		} else {
 			addEventBtn.style.display = 'block';
 		}
 		_this.selectGroup.destroy();
 		_this.selectGroup = null;
 	})
 
-	delEventBtn.addEventListener('click',function(){
-		eventSpan.removeAttribute('class');
-		eventSpan.removeAttribute('data-eventid1');
-		eventSpan.removeAttribute('data-eventname1');
-		eventSpan.removeAttribute('data-eventid2');
-		eventSpan.removeAttribute('data-eventname2');
+	delEventBtn.addEventListener('click', function () {
+		eventBox.classList.remove('hasevent');
+		eventBox.removeAttribute('data-eventid1');
+		eventBox.removeAttribute('data-eventname1');
+		eventBox.removeAttribute('data-eventid2');
+		eventBox.removeAttribute('data-eventname2');
 		eventName.innerHTML = '';
 		eventName.style.display = 'none';
 		this.style.display = 'none';
@@ -240,63 +293,59 @@ MSlide.prototype.createSlideItme = function(file){
 }
 
 //图片对象添加到layout对象中的uploader上传队列中；
-MSlide.prototype.editSlideItme = function(file){
+MSlide.prototype.editSlideItme = function (file) {
 	var img = this.imgbox.querySelector('.slideimg');
 	img.src = file.imgsrc;
 	setAttr(img, 'data-name', file.name);
 	var slideItem = this.imgbox.querySelector('.slide-item');
 	this.imgbox.id = file.id;
+	setAttr(slideItem, 'data-imgid', file.id);
 }
 
-MSlide.prototype.deleteSlide = function (imgbox){
-	var id = imgbox.id
-	for(var i=0; i<this.files.length; i++){
-		if(this.files[i].id==id){
-			this.files.splice(i, 1);
-			break;
-		}
-	}
+MSlide.prototype.deleteSlide = function (imgbox) {
+	var id = imgbox.id;
+	console.log(id)
+	this.delImgList(id);
 	imgbox.remove();
-	if(this.selectGroup){
+	if (this.selectGroup) {
 		this.selectGroup.imgbox = null;
 	}
-	console.log(this.files);
 }
 
-MSlide.prototype.slideItemClick = function(imgbox){
+MSlide.prototype.slideItemClick = function (imgbox) {
 	this.imgbox = imgbox;
 	this.addbtn.click();
 }
 
-MSlide.prototype.addEventHandle = function(imgbox){
-	if(this.selectGroup&&this.selectGroup.imgbox){
-		var lastTiemImgBox = this.selectGroup.imgbox;
-		var lastTiemImgBoxEventBox = lastTiemImgBox.querySelector('span');
-		var lastTiemImgBoxSelectBox = lastTiemImgBox.querySelector('.select');
-		var lastTiemImgBoxEventName = lastTiemImgBox.querySelector('.event-name');
-		var lastTiemImgBoAddEventBtn = lastTiemImgBox.querySelector('.addeventbtn');
-		var lastTiemImgBoDelEventBtn = lastTiemImgBox.querySelector('.deleventbtn');
-		if(lastTiemImgBoxEventBox.className=='hasevent'){
-			lastTiemImgBoxSelectBox.style.display = 'none';
-			lastTiemImgBoxEventName.style.display = 'block';
-			lastTiemImgBoDelEventBtn.style.display = 'block';
-		}else{
-			lastTiemImgBoxSelectBox.style.display = 'none';
-			lastTiemImgBoAddEventBtn.style.display = 'block';
+MSlide.prototype.addEventHandle = function (imgbox) {
+	if (this.selectGroup && this.selectGroup.imgbox) {
+		var lastTimeImgBox = this.selectGroup.imgbox;
+		var lastTimeImgBoxEventBox = lastTimeImgBox.querySelector('.slide-item');
+		var lastTimeImgBoxSelectBox = lastTimeImgBox.querySelector('.select');
+		var lastTimeImgBoxEventName = lastTimeImgBox.querySelector('.event-name');
+		var lastTimeImgBoAddEventBtn = lastTimeImgBox.querySelector('.addeventbtn');
+		var lastTimeImgBoDelEventBtn = lastTimeImgBox.querySelector('.deleventbtn');
+		if (lastTimeImgBoxEventBox.classList.contains('hasevent')) {
+			lastTimeImgBoxSelectBox.style.display = 'none';
+			lastTimeImgBoxEventName.style.display = 'block';
+			lastTimeImgBoDelEventBtn.style.display = 'block';
+		} else {
+			lastTimeImgBoxSelectBox.style.display = 'none';
+			lastTimeImgBoAddEventBtn.style.display = 'block';
 		}
 
 		this.selectGroup.destroy();
 	}
 	console.log('添加事件');
 	var val = null;
-	var span = imgbox.querySelector('span');
+	var eventBox = imgbox.querySelector('.slide-item');
 	var select = imgbox.querySelector('.select');
-	var selectBox =  imgbox.querySelector('.select-box');
+	var selectBox = imgbox.querySelector('.select-box');
 	select.style.display = 'block';
-	var eventid1 = span.getAttribute('data-eventid1');
-	var eventname1 = span.getAttribute('data-eventname1');
-	var eventid2 = span.getAttribute('data-eventid2');
-	var eventname2 = span.getAttribute('data-eventname2');
+	var eventid1 = eventBox.getAttribute('data-eventid1');
+	var eventname1 = eventBox.getAttribute('data-eventname1');
+	var eventid2 = eventBox.getAttribute('data-eventid2');
+	var eventname2 = eventBox.getAttribute('data-eventname2');
 	if (eventid1) {
 		val = {
 			data1: {
@@ -315,45 +364,135 @@ MSlide.prototype.addEventHandle = function(imgbox){
 	this.selectGroup.imgbox = imgbox;
 }
 
-MSlide.prototype.addEventOkBtnHandle = function(imgbox,span){
+MSlide.prototype.addEventOkBtnHandle = function (eventBox) {
 	this.data1 = this.selectGroup.s1.select2('data');
 	if (this.selectGroup.h5Path) {
 		var h5Path = this.selectGroup.h5Path;
-		setAttr(span, 'data-h5', h5Path);
+		setAttr(eventBox, 'data-h5', h5Path);
 	} else {
-		span.removeAttribute('data-h5');
-		span.removeAttribute('data-eventname2')
+		eventBox.removeAttribute('data-h5');
+		eventBox.removeAttribute('data-eventname2')
 	}
 	if (this.selectGroup.s2Id) {
 		this.data2 = this.selectGroup.s2.select2('data');
-		if (this.data2[0]&&this.data2[0].text != '') {
+		if (this.data2[0] && this.data2[0].text != '') {
 			this.data2[0].name = this.data2[0].text;
 		}
 	} else {
 		this.data2 = null;
 	}
 	if (this.data1[0].id != '0') {
-		span.className = 'hasevent'
-		setAttr(span, 'data-eventid1', this.data1[0].id);
-		setAttr(span, 'data-eventname1', this.data1[0].text)
+		eventBox.classList.add('hasevent');
+		setAttr(eventBox, 'data-eventid1', this.data1[0].id);
+		setAttr(eventBox, 'data-eventname1', this.data1[0].text)
 	} else {
-		span.className = ''
-		span.removeAttribute('data-eventid1')
-		span.removeAttribute('data-eventname1')
+		eventBox.classList.remove('hasevent');
+		eventBox.removeAttribute('data-eventid1');
+		eventBox.removeAttribute('data-eventname1');
 	}
 	if (this.data2 && this.data2[0] && this.data2[0].id) {
-		setAttr(span, 'data-eventid2', this.data2[0].id);
-		setAttr(span, 'data-eventname2', this.data2[0].name);
+		setAttr(eventBox, 'data-eventid2', this.data2[0].id);
+		setAttr(eventBox, 'data-eventname2', this.data2[0].name);
 	} else {
-		span.removeAttribute('data-eventid2')
-		span.removeAttribute('data-eventname2')
+		eventBox.removeAttribute('data-eventid2')
+		eventBox.removeAttribute('data-eventname2')
 		if (this.selectGroup.h5Path) {
-			setAttr(span, 'data-eventname2', this.selectGroup.h5PageName);
+			setAttr(eventBox, 'data-eventname2', this.selectGroup.h5PageName);
 		}
 	}
 }
 
 
+MSlide.prototype.createSlideBox = function () {
+	var _this = this;
+	var slideItem = this.slidePage.querySelectorAll('.slide-item');
+	this.isOkBtnClick = true;
+	if (!slideItem.length) return;
+	var slideContent = createEle('div');
+	var id = new Date().getTime();
+	slideContent.id = id;
+	slideContent.className = 'swiper-box'
+	var swiperContainer = createEle('div');
+	swiperContainer.className = 'swiper-container';
+	swiperContainer.id = 'swiper_' + id;
+	var swiperWrapper = createEle('div');
+	swiperWrapper.className = 'swiper-wrapper';
+
+	for (var i = 0; i < slideItem.length; i++) {
+		slideItem[i].classList.add('swiper-slide');
+		swiperWrapper.appendChild(slideItem[i].cloneNode(true));
+	}
+
+	var swiperPagination = createEle('div');
+	swiperPagination.className = 'swiper-pagination';
+
+	var close = createEle('i');
+	close.className = 'close close_slide';
+	setAttr(close,'data-for', id);
+	close.innerHTML = '×';
+	close.addEventListener('click',function(){
+		var id = this.getAttribute('data-for');
+		_this.delSlide(id);
+	})
 
 
+	var edit = createEle('i');
+	edit.className = 'edit';
+	setAttr(edit,'data-for', id);
+	edit.innerHTML = '／';
 
+
+	swiperContainer.appendChild(swiperWrapper);
+	swiperContainer.appendChild(swiperPagination);
+	slideContent.appendChild(swiperContainer);
+	slideContent.appendChild(close);
+	slideContent.appendChild(edit);
+	ele('layout').appendChild(slideContent);
+	var options = {};
+	options['scrollType'] = this.scrollType;
+	if (this.scrollType == 'slide') {
+		options['autoplay'] = this.isAutoPlay;
+		options['delay'] = this.delay.value;
+	}
+	console.log(options)
+	setAttr(slideContent, 'data-slideOption', JSON.stringify(options));
+	this.newSwipers(id, options);
+}
+
+MSlide.prototype.newSwipers = function (id, options) {
+	var selector = "#" + ele(id).querySelector('.swiper-container').id;
+	if (options.scrollType == 'slide') {
+		window[id] = new Swiper(selector, {
+			autoHeight: true,
+			loop: true,
+			autoplay: options.autoplay ? {
+				delay: options.delay,
+				disableOnInteraction:false,
+			} : false,
+			pagination: {
+				el: '.swiper-pagination',
+			},
+		})
+	}else {
+		window[id] = new Swiper(selector, {
+			freeMode: true,
+			freeModeMinimumVelocity:0.2,
+			slidesPerView:'3.2'
+		})
+	}
+}
+
+MSlide.prototype.delSlide = function(id){
+	var slideBox = ele(id);
+	var slideItemList = slideBox.querySelectorAll('.slide-item');
+	var imgIdList = [];
+	console.log(slideItemList)
+	for(var i=0; i<slideItemList.length; i++){
+		var imgid = slideItemList[i].getAttribute('data-imgid');
+		if(imgIdList.indexOf(imgid)>-1) continue;
+		imgIdList.push(imgid);
+	}
+	this.delUpLoaderImgList(imgIdList);
+	slideBox.remove();
+	delete window[id];
+}
