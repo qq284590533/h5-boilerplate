@@ -350,7 +350,8 @@ function amendLayout(layout) {
 		})
 	})
 
-	console.log(window.mslide);
+	//初始化轮播组件
+	window.mslide.importInit();
 }
 
 //设置data-hasEvent属性，有这个属性的元素才能够响应定义的事件。

@@ -46,6 +46,7 @@ MSlide.prototype.init = function () {
 			},
 			FilesAdded: function (up, files) {
 				_this.addSlideItem(up, files);
+				getOssSign(files);
 			},
 			Error: function (up, error) {
 				up.refresh();
@@ -82,7 +83,6 @@ MSlide.prototype.init = function () {
 
 	this.autoplay.querySelector('input').addEventListener('change', function () {
 		_this.isAutoPlay = this.checked
-		console.log(_this.isAutoPlay);
 		if (_this.isAutoPlay) {
 			_this.delayDiv.style.display = 'inline-block';
 		} else {
@@ -92,14 +92,12 @@ MSlide.prototype.init = function () {
 
 	//添加轮播取消重置轮播表单；
 	this.popup.popupCloseCallbackHandle[this.name] = function () {
-		// if(!_this.isOkBtnClick){
-
-		// }
-		console.log(_this.isOkBtnClick);
 		if (_this.isOkBtnClick) {
-			console.log('确定')
+			//如果点击的是确定按钮
+			// console.log('确定')
 		} else {
-			console.log('取消')
+			// console.log('取消')
+			//如果点击的是取消按钮，删除上传队列中的对应图片
 			_this.delUpLoaderImgList(_this.imgIdList)
 		}
 		_this.reset();
@@ -107,13 +105,13 @@ MSlide.prototype.init = function () {
 
 	//添加轮播确定按钮执行事件
 	this.popup.okClickHandle[this.name] = function () {
-		console.log(_this.scrollType);
-		console.log('添加轮播确定！');
 		_this.createSlideBox()
 	}
 
 }
 
+
+//重置弹窗内表单内容；
 MSlide.prototype.reset = function () {
 	console.log('添加轮播弹窗关闭')
 	this.scrollType = 'slide';
@@ -127,12 +125,17 @@ MSlide.prototype.reset = function () {
 	this.isAutoPlay = false;
 	this.delayDiv.style.display = 'none';
 	this.delay.value = 3000;
+	if (this.selectGroup) {
+		this.selectGroup.destroy();
+		this.selectGroup = null;
+	}
 	this.slidePage.innerHTML = '';
 	this.addEventBtn = null;
 	this.slideData = [];
 	this.imgIdList = [];
 	this.imgbox = null;
 	this.isOkBtnClick = false;
+	this.swiperid = null;
 }
 
 MSlide.prototype.addSlideItem = function (up, files) {
@@ -157,27 +160,25 @@ MSlide.prototype.addSlideItem = function (up, files) {
 			preloader.load(file.getSource());
 		}
 	});
+
 }
 
 MSlide.prototype.imgChangeHandle = function (file) {
-	this.files.push(file);
-	this.imgIdList.push(file.id);
+	if (!file.creation) {
+		this.files.push(file);
+		this.imgIdList.push(file.id);
+	}
 	this.imgUploader.files = [];
 	if (this.imgbox) {
 		var id = this.imgbox.id;
-		console.log('修改');
 		this.editSlideItme(file);
 		this.delImgList(id);
 		this.imgbox = null;
 	} else {
-		console.log('新建');
 		this.createSlideItme(file);
 	}
-
-	console.log(this.files);
-	console.log(this.imgIdList);
 }
-MSlide.prototype.delImgList = function(id){
+MSlide.prototype.delImgList = function (id) {
 	for (var i = 0; i < this.files.length; i++) {
 		if (this.files[i].id == id) {
 			this.files.splice(i, 1);
@@ -186,20 +187,17 @@ MSlide.prototype.delImgList = function(id){
 	}
 
 	for (var i = 0; i < this.imgIdList.length; i++) {
-		if (this.imgIdList[i]== id) {
+		if (this.imgIdList[i] == id) {
 			this.imgIdList.splice(i, 1);
 			break;
 		}
 	}
-	console.log(this.files);
-	console.log(this.imgIdList);
 }
 
-MSlide.prototype.delUpLoaderImgList = function(imgIdList){
-	for(var i=0; i<imgIdList.length; i++){
-		console.log(id)
+MSlide.prototype.delUpLoaderImgList = function (imgIdList) {
+	for (var i = 0; i < imgIdList.length; i++) {
 		var id = imgIdList[i];
-		for(var x = 0; x < this.files.length; x++){
+		for (var x = 0; x < this.files.length; x++) {
 			if (this.files[x].id == id) {
 				this.files.splice(x, 1);
 			}
@@ -236,6 +234,22 @@ MSlide.prototype.createSlideItme = function (file) {
 		this.style.display = 'none';
 		_this.addEventHandle(imgbox);
 	})
+
+	if (file.hasevent) {
+		slideItem.classList.add('hasevent');
+		setAttr(slideItem, 'data-eventid1', file['eventid1']);
+		setAttr(slideItem, 'data-eventname1', file['eventname1']);
+		eventName.innerHTML = file['eventname1'];
+		if (file['eventid2']) {
+			setAttr(slideItem, 'data-eventid2', file['eventid2']);
+			setAttr(slideItem, 'data-eventname2', file['eventname2']);
+			eventName.innerHTML += ' → ' + file['eventname2'];
+		}
+		addEventBtn.style.display = 'none';
+		eventName.style.display = 'block';
+		delEventBtn.style.display = 'block';
+	}
+
 
 	var selectBox = imgbox.querySelector('.select');
 	var addEventOkBtn = selectBox.querySelector('.ok');
@@ -304,7 +318,6 @@ MSlide.prototype.editSlideItme = function (file) {
 
 MSlide.prototype.deleteSlide = function (imgbox) {
 	var id = imgbox.id;
-	console.log(id)
 	this.delImgList(id);
 	imgbox.remove();
 	if (this.selectGroup) {
@@ -336,7 +349,6 @@ MSlide.prototype.addEventHandle = function (imgbox) {
 
 		this.selectGroup.destroy();
 	}
-	console.log('添加事件');
 	var val = null;
 	var eventBox = imgbox.querySelector('.slide-item');
 	var select = imgbox.querySelector('.select');
@@ -428,33 +440,46 @@ MSlide.prototype.createSlideBox = function () {
 
 	var close = createEle('i');
 	close.className = 'close close_slide';
-	setAttr(close,'data-for', id);
+	setAttr(close, 'data-for', id);
 	close.innerHTML = '×';
-	close.addEventListener('click',function(){
+	close.addEventListener('click', function () {
 		var id = this.getAttribute('data-for');
-		_this.delSlide(id);
+		_this.delSlideBox(id);
 	})
 
 
 	var edit = createEle('i');
 	edit.className = 'edit';
-	setAttr(edit,'data-for', id);
+	setAttr(edit, 'data-for', id);
 	edit.innerHTML = '／';
-
+	edit.addEventListener('click', function () {
+		var id = this.getAttribute('data-for');
+		_this.editSlideBox(id);
+	})
 
 	swiperContainer.appendChild(swiperWrapper);
 	swiperContainer.appendChild(swiperPagination);
 	slideContent.appendChild(swiperContainer);
 	slideContent.appendChild(close);
 	slideContent.appendChild(edit);
-	ele('layout').appendChild(slideContent);
+
+	var layout = ele('layout')
+	//删除之前的轮播组件
+	if (this.swiperid) {
+		delete window[this.swiperid];
+		layout.insertBefore(slideContent,ele(this.swiperid))
+		ele(this.swiperid).remove();
+		this.swiperid = null;
+	}else{
+		layout.appendChild(slideContent);
+	}
+
 	var options = {};
 	options['scrollType'] = this.scrollType;
 	if (this.scrollType == 'slide') {
 		options['autoplay'] = this.isAutoPlay;
 		options['delay'] = this.delay.value;
 	}
-	console.log(options)
 	setAttr(slideContent, 'data-slideOption', JSON.stringify(options));
 	this.newSwipers(id, options);
 }
@@ -467,32 +492,103 @@ MSlide.prototype.newSwipers = function (id, options) {
 			loop: true,
 			autoplay: options.autoplay ? {
 				delay: options.delay,
-				disableOnInteraction:false,
+				disableOnInteraction: false,
 			} : false,
 			pagination: {
 				el: '.swiper-pagination',
 			},
 		})
-	}else {
+	} else {
 		window[id] = new Swiper(selector, {
 			freeMode: true,
-			freeModeMinimumVelocity:0.2,
-			slidesPerView:'3.2'
+			freeModeMinimumVelocity: 0.2,
+			slidesPerView: '3.2'
 		})
 	}
 }
 
-MSlide.prototype.delSlide = function(id){
+MSlide.prototype.delSlideBox = function (id) {
 	var slideBox = ele(id);
 	var slideItemList = slideBox.querySelectorAll('.slide-item');
 	var imgIdList = [];
-	console.log(slideItemList)
-	for(var i=0; i<slideItemList.length; i++){
+	for (var i = 0; i < slideItemList.length; i++) {
 		var imgid = slideItemList[i].getAttribute('data-imgid');
-		if(imgIdList.indexOf(imgid)>-1) continue;
+		if (imgIdList.indexOf(imgid) > -1) continue;
 		imgIdList.push(imgid);
 	}
 	this.delUpLoaderImgList(imgIdList);
 	slideBox.remove();
 	delete window[id];
+}
+
+MSlide.prototype.editSlideBox = function (id) {
+	this.swiperid = id;
+	var slideBox = ele(id);
+	var slideOptions = JSON.parse(slideBox.getAttribute('data-slideoption'));
+	var slideItemList = slideBox.querySelectorAll('.slide-item');
+	for (var i = 0; i < slideItemList.length; i++) {
+		var slideItem = slideItemList[i]
+		var imgid = slideItem.getAttribute('data-imgid');
+		if (this.imgIdList.indexOf(imgid) > -1) continue;
+		var file = {};
+		var img = slideItem.querySelector('img');
+		file['creation'] = true;
+		file['imgsrc'] = img.src;
+		file['name'] = img.getAttribute('data-name');
+		file['id'] = slideItemList[i].getAttribute('data-imgid');
+
+		if (slideItem.classList.contains('hasevent')) {
+			file['hasevent'] = true;
+			file['eventid1'] = slideItem.getAttribute('data-eventid1');
+			file['eventname1'] = slideItem.getAttribute('data-eventname1');
+			if (slideItem.getAttribute('data-eventid2')) {
+				file['eventid2'] = slideItem.getAttribute('data-eventid2');
+				file['eventname2'] = slideItem.getAttribute('data-eventname2');
+			}
+		}
+		this.imgChangeHandle(file);
+		this.imgIdList.push(imgid);
+	}
+
+	this.scrollType = slideOptions.scrollType;
+	for (var i = 0; i < this.scrollTypeInput.length; i++) {
+		if (this.scrollTypeInput[i].value == this.scrollType) {
+			this.scrollTypeInput[i].checked = true;
+		}
+	}
+
+	if (slideOptions.scrollType == 'slide') {
+		this.autoplay.style.display = 'block';
+		this.isAutoPlay = slideOptions.autoplay;
+		if (slideOptions.autoplay) {
+			ele('autoplay').checked = true;
+			this.delayDiv.style.display = 'inline-block';
+			this.delay.value = slideOptions.delay;
+		}
+	} else {
+		this.autoplay.style.display = 'none';
+	}
+	this.openBtn.click();
+}
+
+//导入后初始化轮播组件
+MSlide.prototype.importInit = function () {
+	var _this = this;
+	var swiperBoxList = document.querySelectorAll('.swiper-box');
+	for (var i = 0; i < swiperBoxList.length; i++) {
+		var swiperBoxItem = swiperBoxList[i];
+		var id = swiperBoxItem.id;
+		var options = JSON.parse(swiperBoxItem.getAttribute('data-slideoption'));
+		this.newSwipers(id, options);
+		var close = swiperBoxItem.querySelector('.close_slide');
+		var edit = swiperBoxItem.querySelector('.edit');
+		(function (id) {
+			close.addEventListener('click', function () {
+				_this.delSlideBox(id);
+			})
+			edit.addEventListener('click', function () {
+				_this.editSlideBox(id);
+			})
+		})(id)
+	}
 }
