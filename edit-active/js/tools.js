@@ -1,8 +1,3 @@
-//禁止网页文本选中事件
-document.body.onselectstart = document.body.ondrag = function () {
-	return false;
-}
-
 function ele(id) {
 	return document.getElementById(id);
 }

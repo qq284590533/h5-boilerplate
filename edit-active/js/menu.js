@@ -4,6 +4,7 @@ function Menu(id) {
 	this.ok = ele('ok');
 	this.cancel = ele('cancel');
 	this.eventName = document.getElementById('eventName');
+	this.okClickHandleList = [];
 
 	var _this = this;
 
@@ -12,11 +13,15 @@ function Menu(id) {
 		_this.close();
 	}
 
-	//确定按钮回调
-	popup.okClickHandle[this.name] = function(){
+	this.okClickHandleList.push(function(){
 		_this.okBtnFun();
-	}
+	})
+
+	//确定按钮回调
+	popup.okClickHandle[this.name] = this.okClickHandleList;
 }
+
+
 
 Menu.prototype.close = function () {
 	this.selectGroup.destroy();

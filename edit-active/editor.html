@@ -7,6 +7,13 @@
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>图文页面编辑</title>
 	<link rel="stylesheet" href="./css/main.css">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="./js/popup/popup.css">
+	<style>
+		.hasevent{
+			border: 2px solid rgba(255, 29, 21, 0.336);
+		}
+	</style>
 </head>
 
 <body>
@@ -21,10 +28,16 @@
 				<div class="row">
 					<div id="editBox"></div>
 				</div>
+				<p>（添加图片后，在图片上点击右键添加事件。）</p>
+				<div class="row">
+					<span>当前点击事件：</span>
+					<p id="eventName"></p>
+				</div>
 				<div class="row">
 					<p id="uploadImgTips"></p>
 					<span>上传图片并生成HTML</span>
 					<div class="filename">
+						<input id="titleName" type="text" placeholder="输入标题名"><br>
 						<input id="fileName" type="text" placeholder="输入文件名">
 						<button id="createHtml" class="btn">确定</button>
 					</div>
@@ -41,20 +54,45 @@
 			</div>
 		</div>
 	</div>
+	<div class="c-popup" id="popup">
+		<div class="c-shade"></div>
+		<div class="c-container">
+			<div class="title"></div>
+			<div class="body scroll">
+				<div class="c-content event-menu" id="eventMenu">
+					<div class="select-box"></div>
+				</div>
+			</div>
+			<div class="footer">
+				<button id="popupOkBtn" class="btn ok">确定</button>
+				<button id="popupCancelBtn" class="btn cancel">取消</button>
+			</div>
+		</div>
+	</div>
 	<script src="./js/jquery-1.11.3.min.js"></script>
 	<script src="./js/plupload-2.1.2/js/plupload.full.min.js"></script>
 	<script src="https://unpkg.com/wangeditor/release/wangEditor.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 	<!-- 工具类方法 -->
 	<script src="./js/tools.js"></script>
 
 	<!-- 上传组件工具类方法 -->
 	<script src="./js/uploadTools.js"></script>
 
-	<!--  -->
+	<!-- 弹窗 -->
+	<script src="./js/popup/popup.js"></script>
+
+	<!-- 下拉框组件封装 -->
+	<script src="./js/selectGroup.js"></script>
+	<script src="./js/menu.js"></script>
 	<script src="./js/editor.js"></script>
 	<script>
 		window.onload = function () {
-			// var editor = editInit();
+			popup = new Popup('popup').init();
+			editor = editInit();
+			editor.menu.okClickHandleList.push(function () {
+				ele('content').innerHTML = editor.txt.html();
+			})
 		}
 	</script>
 </body>

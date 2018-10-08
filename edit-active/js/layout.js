@@ -1,3 +1,8 @@
+//禁止网页文本选中事件
+document.body.onselectstart = document.body.ondrag = function () {
+	return false;
+}
+
 //添加关闭按钮
 function addCloseBtn(layout, span) {
 	var i = createEle('i');
