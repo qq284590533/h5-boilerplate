@@ -28,7 +28,6 @@
 				<div class="row">
 					<div id="editBox"></div>
 				</div>
-				<p>（添加图片后，在图片上点击右键添加事件。）</p>
 				<div class="row">
 					<span>当前点击事件：</span>
 					<p id="eventName"></p>
@@ -90,6 +89,10 @@
 		window.onload = function () {
 			popup = new Popup('popup').init();
 			editor = editInit();
+			// document.querySelector('.w-e-text-container').style.height = 'auto';
+			// document.querySelector('.w-e-text-container').style.minHeight = '300px';
+			// document.querySelector('.w-e-text').style.minHeight = '300px';
+			// document.querySelector('.w-e-text').style.resize = 'vertical';
 			editor.menu.okClickHandleList.push(function () {
 				ele('content').innerHTML = editor.txt.html();
 			})

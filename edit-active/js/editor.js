@@ -27,8 +27,8 @@ function editInit() {
         'justify', // 对齐方式
         'image', // 插入图片
         'table', // 表格
-        'undo', // 撤销
-        'redo' // 重复
+        // 'undo', // 撤销
+        // 'redo' // 重复
     ]
     editor.create();
     editor.menu = new Menu('eventMenu');
@@ -129,9 +129,7 @@ function creatBase64Img(editor, files, up) {
             var fr = new mOxie.FileReader();
             fr.onload = function () {
                 file.imgsrc = fr.result;
-                editor.cmd.do('insertHtml', '<img id=' + file.id + ' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/>');
-
-
+                editor.cmd.do('insertHtml', '<img id=' + file.id + ' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/><span id="anchor"></span>');
                 jsonData.imgNumOld = jsonData.imgNumNow;
                 jsonData.imgNumNow++;
             }
@@ -141,7 +139,7 @@ function creatBase64Img(editor, files, up) {
             preloader.onload = function () {
                 var imgsrc = preloader.getAsDataURL();
                 file.imgsrc = imgsrc;
-                editor.cmd.do('insertHtml', '<img id=' + file.id + ' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/><p><br></p>')
+                editor.cmd.do('insertHtml', '<img id=' + file.id + ' src="' + file.imgsrc + '"data-isnew=true data-name=' + file.name + ' style="max-width:100%;"/><span id="anchor"></span>')
                 jsonData.imgNumOld = jsonData.imgNumNow;
                 jsonData.imgNumNow++;
                 preloader.destroy();
@@ -149,11 +147,18 @@ function creatBase64Img(editor, files, up) {
             };
             preloader.load(file.getSource());
         }
-        console.log(document.getElementById(file.id))
+        if(ele('anchor')) ele('anchor').remove();
     });
 }
 
 function eidtOnChange(editor, up) {
+    var textBox = document.querySelector('.w-e-text')
+    var anchor = textBox.querySelector('#anchor');
+    // console.log(anchor.offsetTop);
+    if(anchor){
+        textBox.scrollTop = anchor.offsetTop-100;
+        anchor.remove();
+    }
     ele('content').innerHTML = editor.txt.html();
     var imgFile = [];
     //删除图片时修改上传图片列表
@@ -164,9 +169,6 @@ function eidtOnChange(editor, up) {
         jsonData.imgNumOld = jsonData.imgNumNow;
         jsonData.imgNumOld--;
         // console.log(jsonData)
-
-
-
         imgs.forEach(function (item) {
             for (var i = 0; i < imgUploader.files.length; i++) {
                 if (imgUploader.files[i].id == item.id) {
@@ -189,8 +191,8 @@ ele('importHtml').addEventListener('click', function () {
 })
 
 function addEventFun (){
-    var wetextImgs = document.querySelector('.w-e-text').querySelectorAll('img');
-    console.log(wetextImgs)
+    var textBox = document.querySelector('.w-e-text');
+    var wetextImgs = textBox.querySelectorAll('img');
     wetextImgs.forEach(function (item) {
         (function (item) {
             var hasclickhandle = item.getAttribute('data-clickhandle');
@@ -218,7 +220,7 @@ function addEventFun (){
                 })
             }
         })(item)
-    })
+    });
 }
 
 //选择HTML文件

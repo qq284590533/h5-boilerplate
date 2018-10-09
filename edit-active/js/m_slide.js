@@ -500,9 +500,20 @@ MSlide.prototype.newSwipers = function (id, options) {
 		})
 	} else {
 		window[id] = new Swiper(selector, {
-			freeMode: true,
+			// freeMode: true,
+			loop: true,
+			loopAdditionalSlides : 2,
 			freeModeMinimumVelocity: 0.2,
-			slidesPerView: '3.2'
+			slidesPerView: '1.6',
+			effect : 'coverflow',
+			centeredSlides: true,
+			coverflowEffect: {
+			  rotate: 50,
+			  stretch: 3,
+			  depth: 200,
+			  modifier: 1,
+			  slideShadows : true
+			},
 		})
 	}
 }
