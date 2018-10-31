@@ -15,7 +15,7 @@ ul{
 	list-style: none;
 }
 .scroll::-webkit-scrollbar{
-    width: 5px;
+    width: 0px;
 }
 .scroll::-webkit-scrollbar-thumb{
     border-radius: 5px;
@@ -51,11 +51,16 @@ ul{
 	background-repeat: no-repeat;
 	float: left;
 }
-#pageView{
+.relative-box{
 	position: relative;
 	width: 100%;
 	height: 100%;
+}
+#pageView{
+	width: 100%;
+	height: 100%;
 	overflow-y: auto;
+	overflow-x: hidden;
 }
 
 #pageView .block{
@@ -86,8 +91,9 @@ ul{
 }
 
 #layout{
-	position: relative;
+	position: static ;
 	width: 100%;
+	min-height: 100%;
 	overflow: hidden;
 }
 #layout img{
@@ -481,4 +487,26 @@ ul{
 }
 #layout .swiper-box>i{
 	display: block
+}
+
+.float-resize{
+	position: absolute;
+	width: 4px;
+	height: 30px;
+	background: #ffa200;
+	right: 0px;
+	top: 50%;
+	margin-top: -15px;
+	z-index: 9999;
+	cursor: w-resize;
+}
+.float-move{
+	position: absolute;
+	width: 10px;
+	height: 10px;
+	left: 0;
+	bottom: 0;
+	background: #ffa200;
+	z-index: 9999;
+	cursor: move
 }

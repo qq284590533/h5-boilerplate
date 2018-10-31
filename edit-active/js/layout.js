@@ -39,49 +39,6 @@ function getPos(layout, e) {
 	}
 }
 
-function imgToView(layout, up, files) {
-	plupload.each(files, function (file) {
-		if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
-			var fr = new mOxie.FileReader();
-			fr.onload = function () {
-				file.imgsrc = fr.result;
-				addImgHandle(layout, file, up)
-			}
-			fr.readAsDataURL(file.getSource());
-		} else {
-			var preloader = new mOxie.Image();
-			preloader.onload = function () {
-				var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
-				file.imgsrc = imgsrc;
-				preloader.destroy();
-				preloader = null;
-				addImgHandle(layout, file, up)
-			};
-			preloader.load(file.getSource());
-		}
-	});
-}
-
-
-function addImgHandle(layout, file, up) {
-	if (!layout.imgFilesJson[layout.blockId] && !ele(layout.blockId)) {
-		createBlock(layout, file, up)
-	} else {
-		var img = ele(layout.blockId).querySelector('img')
-		img.src = file.imgsrc;
-		setAttr(img, 'data-isnew', true);
-		setAttr(img, 'data-name', file.name);
-		ele(layout.blockId).id = file.id;
-		layout.imgFilesJson[file.id] = file;
-		delete layout.imgFilesJson[layout.blockId];
-		for (var i = 0; i < up.files.length; i++) {
-			if (up.files[i].id == layout.blockId) {
-				up.files.splice(i, 1);
-			}
-		}
-	}
-}
-
 var ossParams = {
 	host: "",
 	accessid: '',
@@ -154,7 +111,7 @@ Layout.prototype.init = function () {
 			PostInit: function () { //上传初始化的操作函数
 			},
 			FilesAdded: function (up, files) {
-				imgToView(_this, up, files);
+				_this.imgToView(up, files);
 				getOssSign(files);
 			},
 			BeforeUpload: function (up, file) {
@@ -234,9 +191,8 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 	})
 }
 
-
-//选择图片
-function createBlock(layout, file, up) {
+Layout.prototype.createBlock = function(file, up){
+	var _this = this;
 	var div = createEle('div'),
 		eventbox = createEle('div'),
 		closebtn = createEle('i'),
@@ -245,7 +201,7 @@ function createBlock(layout, file, up) {
 		id = file.id;
 	div.id = id;
 	div.className = 'block';
-	layout.elements.layout.appendChild(div);
+	// this.elements.layout.appendChild(div);
 
 	div.appendChild(img);
 	div.appendChild(eventbox);
@@ -258,14 +214,14 @@ function createBlock(layout, file, up) {
 
 	eventbox.className = 'eventbox';
 	setAttr(eventbox, 'data-handleName', 'addEventBox');
-	layout.setRespondEventElement(eventbox);
-	layout.bindEvent(eventbox, 'mousedown', layout.onMouseDown);
+	this.setRespondEventElement(eventbox);
+	this.bindEvent(eventbox, 'mousedown', this.onMouseDown);
 
 	closebtn.innerHTML = '×';
 	closebtn.className = 'close close_block';
 	closebtn.addEventListener('click', function () {
 		this.parentNode.remove();
-		delete layout.imgFilesJson[this.parentNode.id];
+		delete _this.imgFilesJson[this.parentNode.id];
 		for (var i = 0; i < up.files.length; i++) {
 			if (up.files[i].id == this.parentNode.id) {
 				up.files.splice(i, 1);
@@ -276,10 +232,56 @@ function createBlock(layout, file, up) {
 	editbtn.innerHTML = '／';
 	editbtn.className = 'edit';
 	editbtn.addEventListener('click', function () {
-		layout.blockId = this.parentNode.id;
-		layout.elements.addImg.click();
+		_this.blockId = this.parentNode.id;
+		_this.elements.addImg.click();
 	})
-	layout.imgFilesJson[file.id] = file;
+	_this.imgFilesJson[file.id] = file;
+	return div
+}
+
+Layout.prototype.imgToView = function ( up, files) {
+	var _this = this;
+	plupload.each(files, function (file) {
+		if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
+			var fr = new mOxie.FileReader();
+			fr.onload = function () {
+				file.imgsrc = fr.result;
+				var div = _this.createBlock(file, up)
+				_this.addImgHandle( div, file, up)
+			}
+			fr.readAsDataURL(file.getSource());
+		} else {
+			var preloader = new mOxie.Image();
+			preloader.onload = function () {
+				var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
+				file.imgsrc = imgsrc;
+				preloader.destroy();
+				preloader = null;
+				var div = _this.createBlock(file, up)
+				_this.addImgHandle( div, file, up)
+			};
+			preloader.load(file.getSource());
+		}
+	});
+}
+
+Layout.prototype.addImgHandle = function (div, file, up) {
+	if (!this.imgFilesJson[this.blockId] && !ele(this.blockId)) {
+		this.elements.layout.appendChild(div);
+	} else {
+		var img = ele(this.blockId).querySelector('img')
+		img.src = file.imgsrc;
+		setAttr(img, 'data-isnew', true);
+		setAttr(img, 'data-name', file.name);
+		ele(this.blockId).id = file.id;
+		this.imgFilesJson[file.id] = file;
+		delete this.imgFilesJson[this.blockId];
+		for (var i = 0; i < up.files.length; i++) {
+			if (up.files[i].id == this.blockId) {
+				up.files.splice(i, 1);
+			}
+		}
+	}
 }
 
 function createImg(url) {
@@ -316,6 +318,10 @@ function htmlChange(layout) {
 
 //导入修改，初始化
 function amendLayout(layout) {
+	var floatBlock = layout.elements.layout.querySelectorAll('.float-block')
+	floatBlock.forEach(function(item){
+		item.style.position = 'absolute';
+	})
 	var eventboxs = layout.elements.layout.querySelectorAll('.eventbox');
 	eventboxs.forEach(function (eventbox) {
 		return (function (eventbox) {
@@ -323,8 +329,13 @@ function amendLayout(layout) {
 		})(eventbox)
 	});
 
+
 	var blocks = layout.elements.layout.querySelectorAll('.block');
 	blocks.forEach(function (block) {
+		var isfloat = block.getAttribute('data-isfloat');
+		if(isfloat){
+			layout.bindEvent(block,'mousedown',layout.onMouseDown)
+		}
 		var close = block.querySelector('.close_block');
 		var edit = block.querySelector('.edit');
 		close.addEventListener('click', function () {
@@ -369,11 +380,13 @@ Layout.prototype.setRespondEventElement = function (element) {
 // e.button==1鼠标滚轮键
 // e.button==2鼠标右键
 Layout.prototype.onMouseDown = function (layout, e) {
+	e.stopPropagation();
 	var hasEvent = e.target.getAttribute('data-hasEvent');
 	if (!hasEvent || e.button != 0) return;
 	// console.log('按下')
 	layout.mouseHasDown = true;
 	layout.handleName = e.target.getAttribute('data-handleName');
+	console.log(layout.handleName)
 	if (e.target.nodeName == 'DIV') {
 		layout.eventBox = e.target
 	} else if (e.target.nodeName == 'SPAN') {
@@ -383,14 +396,18 @@ Layout.prototype.onMouseDown = function (layout, e) {
 	}
 	var eventHandleBox = createEle('div');
 	eventHandleBox.className = 'handle-box';
+	eventHandleBox.style.position = 'absolute';
 	eventHandleBox.style.width = '100%';
 	eventHandleBox.style.height = '100%';
 	eventHandleBox.style.left = '0';
 	eventHandleBox.style.top = '0';
 	eventHandleBox.style.zIndex = 9999;
 	layout.eventHandleBox = eventHandleBox;
-	layout.eventBox.appendChild(eventHandleBox);
-
+	if(layout.eventBox.classList.contains('float-block')){
+		ele('pageView').appendChild(eventHandleBox);
+	}else{
+		layout.eventBox.appendChild(eventHandleBox);
+	}
 	layout.bindEvent(eventHandleBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(eventHandleBox, 'mouseup', layout.onMouseUp);
 	switch (layout.handleName) {
@@ -402,6 +419,12 @@ Layout.prototype.onMouseDown = function (layout, e) {
 			break;
 		case 'resizeEventBox':
 			resizeEventBox_mousedown(layout, e);
+			break;
+		case 'resizeFloatBox':
+			resizeFloatBox_mousedown(layout, e);
+			break;
+		case 'moveFloatBox':
+			moveFloatBox_mousedown(layout, e);
 			break;
 		default:
 			break;
@@ -422,6 +445,12 @@ Layout.prototype.onMouseMove = function (layout, e) {
 		case 'resizeEventBox':
 			resizeEventBox_mousemove(layout, e);
 			break;
+		case 'resizeFloatBox':
+			resizeFloatBox_mousemove(layout, e);
+			break;
+		case 'moveFloatBox':
+			moveFloatBox_mousemove(layout, e);
+			break;
 		default:
 			break;
 	}
@@ -435,15 +464,10 @@ Layout.prototype.onMouseUp = function (layout, e) {
 		case 'addEventBox':
 			addEventBox_mouseup(layout, e);
 			break;
-		case 'moveEventBox':
-			moveEventBox_mouseup(layout, e);
-			break;
-		case 'resizeEventBox':
-			resizeEventBox_mouseup(layout, e);
-			break;
 		default:
 			break;
 	}
+	resetDatas(layout)
 }
 
 function getEleStyle(layout, element) {
@@ -454,6 +478,7 @@ function getEleStyle(layout, element) {
 
 //添加事件span时鼠标点下事件处理函数
 function addEventBox_mousedown(layout, e) {
+	console.log(e.target)
 	getPos(layout, e);
 	getEleStyle(layout, e.target)
 	var span = createEle('span');
@@ -498,7 +523,6 @@ function addEventBox_mouseup(layout, e) {
 	if (parseFloat(spanBoxStyle.width) < 10 || parseFloat(spanBoxStyle.height) < 10) {
 		layout.spanBox.remove();
 	}
-	resetDatas(layout)
 }
 
 //移动事件span时鼠标点下事件处理函数
@@ -528,12 +552,7 @@ function moveEventBox_mousemove(layout, e) {
 	layout.spanBox.style.top = top;
 }
 
-//移动事件span时鼠标放开事件处理函数
-function moveEventBox_mouseup(layout, e) {
-	resetDatas(layout);
-	layout.spanBoxPos = null;
-}
-
+//鼠标抬起重置属性
 function resetDatas(layout) {
 	layout.pos = {
 		start: null,
@@ -542,12 +561,17 @@ function resetDatas(layout) {
 	layout.boxStyle = {
 		w: null,
 		h: null
-	}
+	};
+	layout.spanBoxStyle = {
+		w: null,
+		h: null
+	};
 	layout.spanBox = null;
 	layout.mouseHasDown = false;
 	layout.handleName = null;
 	layout.eventHandleBox.remove();
 	layout.eventHandleBox = null;
+	layout.spanBoxPos = null;
 }
 
 function resizeEventBox_mousedown(layout, e) {
@@ -571,24 +595,56 @@ function resizeEventBox_mousemove(layout, e) {
 	layout.spanBox.style.height = h * 100 + '%';
 }
 
-function resizeEventBox_mouseup(layout, e) {
-	layout.pos = {
-		start: null,
-		end: null
-	};
-	layout.boxStyle = {
-		w: null,
-		h: null
+function resizeFloatBox_mousedown(layout, e) {
+	e.preventDefault ? e.preventDefault() : (e.returnValue = false);
+	e.stopPropagation();
+	getPos(layout, e);
+	getEleStyle(layout, layout.elements.layout);
+	layout.spanBox = e.target.parentNode;
+	var spanboxstyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.spanBoxStyle.w = parseFloat(spanboxstyle.width);
+}
+
+function resizeFloatBox_mousemove(layout, e) {
+	getPos(layout, e);
+	var w = layout.spanBoxStyle.w + (layout.pos.end.x - layout.pos.start.x);
+	var h = layout.spanBoxStyle.h + (layout.pos.end.y - layout.pos.start.y);
+	w = w / layout.boxStyle.w;
+	h = h / layout.boxStyle.h;
+	layout.eventBox.style.width = w * 100 + '%';
+}
+
+function moveFloatBox_mousedown(layout, e){
+	layout.spanBox = e.target.parentNode;
+	layout.eventBox = ele('pageView');
+	getEleStyle(layout, layout.eventBox)
+	getPos(layout, e);
+	var left = parseFloat(layout.spanBox.style.left).toFixed(5) / 100 * layout.boxStyle.w;
+	var top = parseFloat(layout.spanBox.style.top).toFixed(5) / 100 * layout.boxStyle.h;
+	layout.spanBoxPos = {
+		x: left,
+		y: top
 	}
-	layout.spanBoxStyle = {
-		w: null,
-		h: null
+}
+
+//移动事件span时鼠标移动事件处理函数
+function moveFloatBox_mousemove(layout, e) {
+	getPos(layout, e);
+	console.log('moveFloat')
+	var x = layout.spanBoxPos.x + (layout.pos.end.x - layout.pos.start.x),
+		y = layout.spanBoxPos.y + (layout.pos.end.y - layout.pos.start.y);
+	var left = x / layout.boxStyle.w * 100,
+		top = y / layout.boxStyle.h * 100;
+
+	console.log(left,top)
+	if(left<=0){
+		left=0
 	}
-	layout.spanBox = null;
-	layout.mouseHasDown = false;
-	layout.handleName = null;
-	layout.eventHandleBox.remove();
-	layout.eventHandleBox = null;
+	if(top<=0){
+		top=0
+	}
+	layout.spanBox.style.left = left + '%';
+	layout.spanBox.style.top = top + '%';
 }
 
 
@@ -635,8 +691,11 @@ function createHtml(layout) {
 	var filename = name + '.html'
 	var htmlbody = document.getElementById('pageView').cloneNode(true);
 
+	var floatBlock = htmlbody.querySelectorAll('.float-block')
+	floatBlock.forEach(function(item){
+		item.style.position = 'fixed';
+	})
 	var imgs = htmlbody.querySelectorAll('img[data-isnew=true]');
-
 	imgs.forEach(function (item) {
 		item.src = "https://f.tticar.com/h5-activity/" + name + '\/' + item.getAttribute('data-name');
 		setAttr(item, 'data-isnew', false);
