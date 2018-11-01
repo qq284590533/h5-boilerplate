@@ -383,10 +383,8 @@ Layout.prototype.onMouseDown = function (layout, e) {
 	e.stopPropagation();
 	var hasEvent = e.target.getAttribute('data-hasEvent');
 	if (!hasEvent || e.button != 0) return;
-	// console.log('按下')
 	layout.mouseHasDown = true;
 	layout.handleName = e.target.getAttribute('data-handleName');
-	console.log(layout.handleName)
 	if (e.target.nodeName == 'DIV') {
 		layout.eventBox = e.target
 	} else if (e.target.nodeName == 'SPAN') {
@@ -403,11 +401,12 @@ Layout.prototype.onMouseDown = function (layout, e) {
 	eventHandleBox.style.top = '0';
 	eventHandleBox.style.zIndex = 9999;
 	layout.eventHandleBox = eventHandleBox;
-	if(layout.eventBox.classList.contains('float-block')){
-		ele('pageView').appendChild(eventHandleBox);
-	}else{
-		layout.eventBox.appendChild(eventHandleBox);
-	}
+	// if(layout.eventBox.classList.contains('float-block')){
+	// 	ele('pageView').appendChild(eventHandleBox);
+	// }else{
+	// 	layout.eventBox.appendChild(eventHandleBox);
+	// }
+	document.body.appendChild(eventHandleBox);
 	layout.bindEvent(eventHandleBox, 'mousemove', layout.onMouseMove);
 	layout.bindEvent(eventHandleBox, 'mouseup', layout.onMouseUp);
 	switch (layout.handleName) {
@@ -434,7 +433,6 @@ Layout.prototype.onMouseDown = function (layout, e) {
 //鼠标移动事件
 Layout.prototype.onMouseMove = function (layout, e) {
 	if (!layout.mouseHasDown) return;
-	// console.log('移动')
 	switch (layout.handleName) {
 		case 'addEventBox':
 			addEventBox_mousemove(layout, e);
@@ -459,7 +457,6 @@ Layout.prototype.onMouseMove = function (layout, e) {
 //鼠标放开事件
 Layout.prototype.onMouseUp = function (layout, e) {
 	if (!layout.mouseHasDown) return;
-	// console.log('放开')
 	switch (layout.handleName) {
 		case 'addEventBox':
 			addEventBox_mouseup(layout, e);
@@ -478,12 +475,15 @@ function getEleStyle(layout, element) {
 
 //添加事件span时鼠标点下事件处理函数
 function addEventBox_mousedown(layout, e) {
-	console.log(e.target)
 	getPos(layout, e);
 	getEleStyle(layout, e.target)
 	var span = createEle('span');
 	var left = layout.pos.start.x / layout.boxStyle.w * 100 + '%'
 	var top = layout.pos.start.y / layout.boxStyle.h * 100 + '%'
+	layout.maxWH = {
+		w:Math.abs(layout.boxStyle.w-layout.pos.start.x),
+		h:Math.abs(layout.boxStyle.h-layout.pos.start.y),
+	}
 	span.style.left = left;
 	span.style.top = top;
 	var id = new Date().getTime();
@@ -506,6 +506,13 @@ function addEventBox_mousemove(layout, e) {
 	getPos(layout, e);
 	var w = Math.abs(layout.pos.end.x - layout.pos.start.x);
 	var h = Math.abs(layout.pos.end.y - layout.pos.start.y);
+
+	if(w>layout.maxWH.w){
+		w = layout.maxWH.w;
+	}
+	if(h>layout.maxWH.h){
+		h = layout.maxWH.h;
+	}
 	w = w / layout.boxStyle.w;
 	h = h / layout.boxStyle.h;
 	layout.spanBox.style.width = w * 100 + '%';
@@ -519,7 +526,6 @@ function addEventBox_mouseup(layout, e) {
 
 	addCloseBtn(layout, layout.spanBox);
 	addresizeBtn(layout, layout.spanBox)
-
 	if (parseFloat(spanBoxStyle.width) < 10 || parseFloat(spanBoxStyle.height) < 10) {
 		layout.spanBox.remove();
 	}
@@ -530,6 +536,11 @@ function moveEventBox_mousedown(layout, e) {
 	layout.eventBox = e.target.parentNode;
 	layout.spanBox = e.target;
 	getEleStyle(layout, layout.eventBox)
+	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.spanBoxStyle =  {
+		w:parseFloat(spanBoxStyle.width),
+		h:parseFloat(spanBoxStyle.height)
+	}
 	getPos(layout, e);
 	var left = parseFloat(layout.spanBox.style.left).toFixed(5) / 100 * layout.boxStyle.w;
 	var top = parseFloat(layout.spanBox.style.top).toFixed(5) / 100 * layout.boxStyle.h;
@@ -546,6 +557,20 @@ function moveEventBox_mousemove(layout, e) {
 	getPos(layout, e);
 	var x = layout.spanBoxPos.x + (layout.pos.end.x - layout.pos.start.x),
 		y = layout.spanBoxPos.y + (layout.pos.end.y - layout.pos.start.y);
+	var maxX = layout.boxStyle.w-layout.spanBoxStyle.w;
+	if((x+layout.spanBoxStyle.w)>layout.boxStyle.w){
+		x=maxX
+	}
+	var maxY = layout.boxStyle.h-layout.spanBoxStyle.h;
+	if((y+layout.spanBoxStyle.h)>layout.boxStyle.h){
+		y=maxY
+	}
+	if(x<=0){
+		x=0
+	}
+	if(y<=0){
+		y=0
+	}
 	var left = x / layout.boxStyle.w * 100 + '%',
 		top = y / layout.boxStyle.h * 100 + '%';
 	layout.spanBox.style.left = left;
@@ -566,6 +591,10 @@ function resetDatas(layout) {
 		w: null,
 		h: null
 	};
+	layout.maxWH = {
+		w: null,
+		h: null
+	}
 	layout.spanBox = null;
 	layout.mouseHasDown = false;
 	layout.handleName = null;
@@ -580,15 +609,29 @@ function resizeEventBox_mousedown(layout, e) {
 	getPos(layout, e);
 	getEleStyle(layout, layout.eventBox);
 	layout.spanBox = e.target.parentNode;
-	var spanboxstyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
-	layout.spanBoxStyle.w = parseFloat(spanboxstyle.width);
-	layout.spanBoxStyle.h = parseFloat(spanboxstyle.height);
+	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.maxWH = {
+		w:Math.abs(layout.boxStyle.w-parseFloat(spanBoxStyle.left)),
+		h:Math.abs(layout.boxStyle.h-parseFloat(spanBoxStyle.top)),
+	}
+	layout.spanBoxStyle =  {
+		w:parseFloat(spanBoxStyle.width),
+		h:parseFloat(spanBoxStyle.height)
+	}
+	layout.spanBoxStyle.w = parseFloat(spanBoxStyle.width);
+	layout.spanBoxStyle.h = parseFloat(spanBoxStyle.height);
 }
 
 function resizeEventBox_mousemove(layout, e) {
 	getPos(layout, e);
 	var w = layout.spanBoxStyle.w + (layout.pos.end.x - layout.pos.start.x);
 	var h = layout.spanBoxStyle.h + (layout.pos.end.y - layout.pos.start.y);
+	if(w>layout.maxWH.w){
+		w = layout.maxWH.w;
+	}
+	if(h>layout.maxWH.h){
+		h = layout.maxWH.h;
+	}
 	w = w / layout.boxStyle.w;
 	h = h / layout.boxStyle.h;
 	layout.spanBox.style.width = w * 100 + '%';
@@ -601,14 +644,25 @@ function resizeFloatBox_mousedown(layout, e) {
 	getPos(layout, e);
 	getEleStyle(layout, layout.elements.layout);
 	layout.spanBox = e.target.parentNode;
-	var spanboxstyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
-	layout.spanBoxStyle.w = parseFloat(spanboxstyle.width);
+	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.maxWH = {
+		w:Math.abs(layout.boxStyle.w-parseFloat(spanBoxStyle.left)),
+		h:Math.abs(layout.boxStyle.h-parseFloat(spanBoxStyle.top)),
+	}
+	layout.spanBoxStyle =  {
+		w:parseFloat(spanBoxStyle.width),
+		h:parseFloat(spanBoxStyle.height)
+	}
+	layout.spanBoxStyle.w = parseFloat(spanBoxStyle.width);
 }
 
 function resizeFloatBox_mousemove(layout, e) {
 	getPos(layout, e);
 	var w = layout.spanBoxStyle.w + (layout.pos.end.x - layout.pos.start.x);
 	var h = layout.spanBoxStyle.h + (layout.pos.end.y - layout.pos.start.y);
+	if(w>layout.maxWH.w){
+		w = layout.maxWH.w;
+	}
 	w = w / layout.boxStyle.w;
 	h = h / layout.boxStyle.h;
 	layout.eventBox.style.width = w * 100 + '%';
@@ -618,6 +672,11 @@ function moveFloatBox_mousedown(layout, e){
 	layout.spanBox = e.target.parentNode;
 	layout.eventBox = ele('pageView');
 	getEleStyle(layout, layout.eventBox)
+	var spanBoxStyle = layout.spanBox.currentStyle ? layout.spanBox.currentStyle : window.getComputedStyle(layout.spanBox, null);
+	layout.spanBoxStyle =  {
+		w:parseFloat(spanBoxStyle.width),
+		h:parseFloat(spanBoxStyle.height)
+	}
 	getPos(layout, e);
 	var left = parseFloat(layout.spanBox.style.left).toFixed(5) / 100 * layout.boxStyle.w;
 	var top = parseFloat(layout.spanBox.style.top).toFixed(5) / 100 * layout.boxStyle.h;
@@ -630,19 +689,25 @@ function moveFloatBox_mousedown(layout, e){
 //移动事件span时鼠标移动事件处理函数
 function moveFloatBox_mousemove(layout, e) {
 	getPos(layout, e);
-	console.log('moveFloat')
 	var x = layout.spanBoxPos.x + (layout.pos.end.x - layout.pos.start.x),
 		y = layout.spanBoxPos.y + (layout.pos.end.y - layout.pos.start.y);
+	var maxX = layout.boxStyle.w-layout.spanBoxStyle.w;
+	if((x+layout.spanBoxStyle.w)>layout.boxStyle.w){
+		x=maxX
+	}
+	var maxY = layout.boxStyle.h-layout.spanBoxStyle.h;
+	if((y+layout.spanBoxStyle.h)>layout.boxStyle.h){
+		y=maxY
+	}
+	if(x<=0){
+		x=0
+	}
+	if(y<=0){
+		y=0
+	}
 	var left = x / layout.boxStyle.w * 100,
 		top = y / layout.boxStyle.h * 100;
 
-	console.log(left,top)
-	if(left<=0){
-		left=0
-	}
-	if(top<=0){
-		top=0
-	}
 	layout.spanBox.style.left = left + '%';
 	layout.spanBox.style.top = top + '%';
 }

@@ -489,6 +489,10 @@ ul{
 	display: block
 }
 
+#pageView .float-block{
+	border: none;
+}
+
 .float-resize{
 	position: absolute;
 	width: 4px;
