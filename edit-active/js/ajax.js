@@ -26,11 +26,11 @@ SelectGroup.prototype.init = function (content) {
 		data: _this.data,
 		templateSelection: function (item) {
 			// debugger
-			console.log(item)
+			// console.log(item)
 			if (!item.id) return item.text;
 
 			if (item.id == '2') {
-				console.log('h5')
+				// console.log('h5')
 				// var reg = /^https?:\/\/(([a-zA-Z0-9_-])+(\.)?)*(:\d+)?(\/((\.)?(\?)?=?&?[a-zA-Z0-9_-](\?)?)*)*$/i;
 				_this.input = document.createElement('input');
 				_this.input.type = 'text';
