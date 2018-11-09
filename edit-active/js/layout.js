@@ -102,7 +102,7 @@ Layout.prototype.init = function () {
 		filters: {
 			mime_types: [{
 				title: "Image files",
-				extensions: "jpg,gif,png"
+				extensions: "jpeg,jpg,gif,png"
 			}],
 			max_file_size: '5mb', //最大只能上传5mb的文件
 			prevent_duplicates: false //不允许选取重复文件
