@@ -318,6 +318,12 @@ function htmlChange(layout) {
 
 //导入修改，初始化
 function amendLayout(layout) {
+	var imgsList = layout.elements.layout.querySelectorAll("[data-echo]")
+	imgsList.forEach(function(item){
+		var src = item.getAttribute("data-echo");
+		item.src = src;
+		item.removeAttribute("style")
+	})
 	var floatBlock = layout.elements.layout.querySelectorAll('.float-block')
 	floatBlock.forEach(function(item){
 		item.style.position = 'absolute';
