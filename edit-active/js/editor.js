@@ -43,7 +43,7 @@ function imgUploadInit(editor) {
     // 获取相关 DOM 节点的 ID
     var btnId = editor.imgMenuId;
     // 创建上传对象
-    console.log(btnId)
+    // console.log(btnId)
     var imguploader = new plupload.Uploader({
         runtimes: 'html5,flash,silverlight,html4',
         browse_button: btnId,

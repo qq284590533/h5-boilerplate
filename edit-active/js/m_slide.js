@@ -113,7 +113,7 @@ MSlide.prototype.init = function () {
 
 //重置弹窗内表单内容；
 MSlide.prototype.reset = function () {
-	console.log('添加轮播弹窗关闭')
+	// console.log('添加轮播弹窗关闭')
 	this.scrollType = 'slide';
 	for (var i = 0; i < this.scrollTypeInput.length; i++) {
 		if (this.scrollTypeInput[i].value == 'slide') {

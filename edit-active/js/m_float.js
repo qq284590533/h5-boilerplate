@@ -69,7 +69,7 @@ MFloat.prototype.imgToView = function (up, files) {
         }
         _this.files.push(file);
     });
-    console.log(this.layout.imgUploader.files)
+    // console.log(this.layout.imgUploader.files)
 }
 
 MFloat.prototype.setFloatDiv = function (div){
