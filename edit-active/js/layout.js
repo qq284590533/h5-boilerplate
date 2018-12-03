@@ -191,12 +191,22 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 	})
 }
 
-Layout.prototype.createBlock = function(file, up){
+Layout.prototype.createBlock = function(file, up, isfloat){
+	let source = file.getSource();
+	console.log(source.getSource())
+	var copyFile = JSON.parse(JSON.stringify(file))
+	copyFile.lastModifiedDate = new Date(copyFile.lastModifiedDate)
+	console.log(file)
+	var newFileObj = Object.assign(file,copyFile);
+	console.log(copyFile)
+	console.log(newFileObj)
+	console.log(up)
 	var _this = this;
 	var div = createEle('div'),
 		eventbox = createEle('div'),
 		closebtn = createEle('i'),
 		editbtn = createEle('i'),
+		movebtn = createEle('i'),
 		img = createEle('img'),
 		id = file.id;
 	div.id = id;
@@ -235,6 +245,16 @@ Layout.prototype.createBlock = function(file, up){
 		_this.blockId = this.parentNode.id;
 		_this.elements.addImg.click();
 	})
+
+	if(!isfloat){
+		div.appendChild(movebtn);
+		movebtn.className = 'move';
+		// editbtn.addEventListener('click', function () {
+		// 	_this.blockId = this.parentNode.id;
+		// 	_this.elements.addImg.click();
+		// })
+	}
+
 	_this.imgFilesJson[file.id] = file;
 	return div
 }

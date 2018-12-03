@@ -50,7 +50,7 @@ MFloat.prototype.imgToView = function (up, files) {
 			var fr = new mOxie.FileReader();
 			fr.onload = function () {
 				file.imgsrc = fr.result;
-                var div = _this.layout.createBlock(file, up)
+                var div = _this.layout.createBlock(file, up, true)
 				_this.layout.addImgHandle( div, file, up)
 			}
 			fr.readAsDataURL(file.getSource());
@@ -61,8 +61,8 @@ MFloat.prototype.imgToView = function (up, files) {
 				file.imgsrc = imgsrc;
 				preloader.destroy();
 				preloader = null;
-                var div = _this.layout.createBlock(file, up)
-                div = _this.setFloatDiv(div)
+                var div = _this.layout.createBlock(file, up, true)
+				div = _this.setFloatDiv(div)
 				_this.layout.addImgHandle( div, file, up)
 			};
 			preloader.load(file.getSource());

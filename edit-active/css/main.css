@@ -86,7 +86,7 @@ ul{
 	background-color: rgba(255, 29, 21, 0.336);
 }
 
-#pageView #layout .block>i{
+#pageView #layout .block:hover>i{
 	display: block;
 }
 
@@ -139,6 +139,17 @@ ul{
 	right: 0;
 	top: 0;
 	background: rgb(36, 112, 253);
+}
+
+#layout i.move{
+	font-size: 12px;
+	left: 0;
+	bottom: 0;
+	background: #ffa200;
+}
+
+#layout i.move:hover{
+	cursor: move;
 }
 
 #layout .eventbox{
