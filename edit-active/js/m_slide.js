@@ -423,7 +423,7 @@ MSlide.prototype.createSlideBox = function () {
 	var slideContent = createEle('div');
 	var id = new Date().getTime();
 	slideContent.id = id;
-	slideContent.className = 'swiper-box'
+	slideContent.className = 'swiper-box block'
 	var swiperContainer = createEle('div');
 	swiperContainer.className = 'swiper-container';
 	swiperContainer.id = 'swiper_' + id;
@@ -457,11 +457,18 @@ MSlide.prototype.createSlideBox = function () {
 		_this.editSlideBox(id);
 	})
 
+	var movebtn = createEle('i');
+	movebtn.className = 'move';
+	setAttr(movebtn, 'data-handleName', 'sortEventBox');	
+	this.layout.setRespondEventElement(movebtn);
+	this.layout.bindEvent(movebtn, 'mousedown', this.layout.onMouseDown);
+
 	swiperContainer.appendChild(swiperWrapper);
 	swiperContainer.appendChild(swiperPagination);
 	slideContent.appendChild(swiperContainer);
 	slideContent.appendChild(close);
 	slideContent.appendChild(edit);
+	slideContent.appendChild(movebtn);
 
 	var layout = ele('layout')
 	//删除之前的轮播组件

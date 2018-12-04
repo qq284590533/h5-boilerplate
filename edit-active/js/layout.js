@@ -87,6 +87,13 @@ function Layout() {
 	this.spanBoxPos = null;
 	this.imgFiles = [];
 	this.menu = new Menu('eventMenu');
+
+	this.clock = null;
+	this.clockRunning = false;
+	this.pageViewRect = null;
+	this.blockArea = [];
+	this.placeHolder = null;
+	this.placeBox = null;
 	this.init();
 }
 
@@ -192,15 +199,15 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 }
 
 Layout.prototype.createBlock = function(file, up, isfloat){
-	let source = file.getSource();
-	console.log(source.getSource())
-	var copyFile = JSON.parse(JSON.stringify(file))
-	copyFile.lastModifiedDate = new Date(copyFile.lastModifiedDate)
-	console.log(file)
-	var newFileObj = Object.assign(file,copyFile);
-	console.log(copyFile)
-	console.log(newFileObj)
-	console.log(up)
+	// let source = file.getSource();
+	// console.log(source.getSource())
+	// var copyFile = JSON.parse(JSON.stringify(file))
+	// copyFile.lastModifiedDate = new Date(copyFile.lastModifiedDate)
+	// console.log(file)
+	// var newFileObj = Object.assign(file,copyFile);
+	// console.log(copyFile)
+	// console.log(newFileObj)
+	// console.log(up)
 	var _this = this;
 	var div = createEle('div'),
 		eventbox = createEle('div'),
@@ -224,8 +231,11 @@ Layout.prototype.createBlock = function(file, up, isfloat){
 
 	eventbox.className = 'eventbox';
 	setAttr(eventbox, 'data-handleName', 'addEventBox');
+	setAttr(movebtn, 'data-handleName', 'sortBlock');
 	this.setRespondEventElement(eventbox);
+	this.setRespondEventElement(movebtn);
 	this.bindEvent(eventbox, 'mousedown', this.onMouseDown);
+	this.bindEvent(movebtn, 'mousedown', this.onMouseDown);
 
 	closebtn.innerHTML = '×';
 	closebtn.className = 'close close_block';
@@ -249,10 +259,6 @@ Layout.prototype.createBlock = function(file, up, isfloat){
 	if(!isfloat){
 		div.appendChild(movebtn);
 		movebtn.className = 'move';
-		// editbtn.addEventListener('click', function () {
-		// 	_this.blockId = this.parentNode.id;
-		// 	_this.elements.addImg.click();
-		// })
 	}
 
 	_this.imgFilesJson[file.id] = file;
@@ -451,6 +457,9 @@ Layout.prototype.onMouseDown = function (layout, e) {
 		case 'moveFloatBox':
 			moveFloatBox_mousedown(layout, e);
 			break;
+		case 'sortBlock':
+			sortBlock_mousedown(layout, e);
+			break;
 		default:
 			break;
 	}
@@ -475,6 +484,9 @@ Layout.prototype.onMouseMove = function (layout, e) {
 		case 'moveFloatBox':
 			moveFloatBox_mousemove(layout, e);
 			break;
+		case 'sortBlock':
+			sortBlock_mousemove(layout, e);
+			break;
 		default:
 			break;
 	}
@@ -486,6 +498,9 @@ Layout.prototype.onMouseUp = function (layout, e) {
 	switch (layout.handleName) {
 		case 'addEventBox':
 			addEventBox_mouseup(layout, e);
+			break;
+		case 'sortBlock':
+			sortBlock_mouseup(layout, e);
 			break;
 		default:
 			break;
@@ -738,6 +753,106 @@ function moveFloatBox_mousemove(layout, e) {
 	layout.spanBox.style.top = top + '%';
 }
 
+function sortBlock_mousedown(layout, e){
+	var layoutBox = layout.elements.layout;
+	layout.pageViewRect = ele('pageView').getBoundingClientRect();
+	layout.eventBox = e.target.parentNode;
+	var blockNodes = layoutBox.querySelectorAll(".block:not(.float-block)");
+	blockNodes.forEach(function(item){
+		var blockInfo = {
+			id:item.id,
+			topY:item.offsetTop,
+			middleY: item.offsetTop+item.offsetHeight/2,
+			bottomY: item.offsetTop+item.offsetHeight
+		}
+		layout.blockArea.push(blockInfo);
+	})
+	getPos(layout, e);
+	console.log(layout.pos)
+	console.log(layout.blockArea)
+	layout.spanBoxPos = {
+		y:layout.eventBox.offsetTop
+	}
+	var y = layout.spanBoxPos.y;
+	layout.eventBox.style.top = y+'px';
+
+	layout.placeHolder =  createEle('div');
+	layout.placeHolder.className = 'placeHolder';
+	layout.placeHolder.style.height = layout.eventBox.offsetHeight+'px';
+	layout.placeBox =  createEle('div');
+	layout.placeBox.innerHTML =  "插入到此处";
+	layout.placeBox.className = 'placeBox';
+	layoutBox.insertBefore(layout.placeHolder,layout.eventBox);
+	layoutBox.insertBefore(layout.placeHolder,layout.eventBox);
+	layout.eventBox.classList.add('draging');
+}
+
+function sortBlock_mousemove(layout, e){
+	var scrollTop = ele('pageView').scrollTop;
+	var eY = e.clientY-layout.pageViewRect.top+scrollTop
+	getPos(layout, e);
+	layout.spanBoxPos = {
+		y:layout.eventBox.offsetTop
+	}
+	var y = layout.spanBoxPos.y + (layout.pos.end.y - layout.pos.start.y);
+	layout.eventBox.style.top = y+'px';
+
+	var boundary_1 = layout.pageViewRect.top+layout.pageViewRect.height*1/4;
+	var boundary_2 = layout.pageViewRect.top+layout.pageViewRect.height*3/4;
+	if(e.clientY<boundary_1){
+		if(!layout.clockRunning){
+			layout.clockRunning = true;
+			layout.clock = setInterval(function(){
+				scrollTop-=10
+				ele('pageView').scrollTop = scrollTop;
+			},10)
+
+		}
+	}else if(e.clientY>boundary_2){
+		if(!layout.clockRunning){
+			layout.clockRunning = true;
+			layout.clock = setInterval(function(){
+				scrollTop+=10
+				ele('pageView').scrollTop = scrollTop;
+			},10)
+		}
+	}else{
+		clearInterval(layout.clock);
+		layout.clockRunning = false;
+	}
+
+	for(var i=0; i<layout.blockArea.length; i++){
+		var itemBlockInfo = layout.blockArea[i];
+		if(eY>itemBlockInfo.topY&&eY<itemBlockInfo.middleY){
+			layout.elements.layout.insertBefore(layout.placeBox,ele(itemBlockInfo.id))
+			break
+		}
+		if(eY>itemBlockInfo.middleY&&eY<itemBlockInfo.bottomY){
+			if(i==layout.blockArea.length-1){
+				layout.elements.layout.appendChild(layout.placeBox);
+			}else{
+				layout.elements.layout.insertBefore(layout.placeBox,ele(layout.blockArea[i+1].id))
+			}
+			break
+		}
+	}
+}
+
+function sortBlock_mouseup(layout, e){
+	var layoutBox = layout.elements.layout;
+	layout.eventBox.removeAttribute('style');
+	layout.eventBox.classList.remove('draging');
+	layoutBox.insertBefore(layout.eventBox,layout.placeBox);
+	layout.placeHolder.remove()
+	layout.placeBox.remove();
+	clearInterval(layout.clock);
+	layout.clock = null;
+	layout.clockRunning = false;
+	layout.pageViewRect = null;
+	layout.blockArea = [];
+	layout.placeHolder = null;
+	layout.placeBox = null;
+}
 
 //鼠标移动到span事件
 function mouseover(layout, e) {
