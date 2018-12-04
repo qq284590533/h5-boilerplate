@@ -198,16 +198,60 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 	})
 }
 
+//将base64转换为文件
+function dataURLtoFile(dataurl, filename) {
+	var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+	bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+	while(n--){
+		u8arr[n] = bstr.charCodeAt(n);
+	}
+	return new File([u8arr], filename, {type:mime});
+  }
+
+  function saveFile(file){
+	var filesJson = window.localStorage.getItem('filesJson');
+	var fileItem = JSON.stringify(file);
+	console.log(fileItem)
+	if(filesJson){
+		filesJson[file.id] = fileItem
+	}else{
+		filesJson = {};
+		filesJson[file.id] = fileItem
+	}
+	window.localStorage.setItem('filesJson',filesJson)
+}
+
 Layout.prototype.createBlock = function(file, up, isfloat){
-	// let source = file.getSource();
-	// console.log(source.getSource())
-	// var copyFile = JSON.parse(JSON.stringify(file))
-	// copyFile.lastModifiedDate = new Date(copyFile.lastModifiedDate)
-	// console.log(file)
-	// var newFileObj = Object.assign(file,copyFile);
+	let source = file.getSource();
+	let fileNative = source.getSource()
+	fileNative.id = file.id;
+	console.log(file)
+	var blob = new Blob([file],{type:file.type});
+	console.log(blob)
+	let mOxieFile = new mOxie.File(null, blob)
+	let pluploadFile = new plupload.File(mOxieFile)
+	pluploadFile.name = file.name;
+	pluploadFile.lastModifiedDate = file.lastModifiedDate;
+	pluploadFile.imgsrc = file.imgsrc;
+	pluploadFile.id = file.id;
+	console.log(pluploadFile)
+	// saveFile(fileNative)
+	// let test = JSON.parse(window.localStorage.getItem('test'))
+	// console.log(test);
+	// // console.log(source.getSource())
+	// // var copyFile = JSON.parse(JSON.stringify(file))
+	// test.lastModifiedDate = new Date(test.lastModifiedDate)
+	// // console.log(file)
+	// let newfile = dataURLtoFile(test.imgsrc,'test');
+	// this.imgUploader.addFile(newfile,'test')
+	// console.log(newfile)
+	// var newFileObj = Object.assign(file,test);
 	// console.log(copyFile)
+	// console.log(file)
 	// console.log(newFileObj)
+	// console.log(newFileObj.getSource())
 	// console.log(up)
+	// window.localStorage.setItem('test',JSON.stringify(file))
 	var _this = this;
 	var div = createEle('div'),
 		eventbox = createEle('div'),
