@@ -106,6 +106,7 @@ MSlide.prototype.init = function () {
 	//添加轮播确定按钮执行事件
 	this.popup.okClickHandle[this.name] = function () {
 		_this.createSlideBox()
+		_this.layout.DBSaveHtml()
 	}
 
 }
@@ -177,6 +178,7 @@ MSlide.prototype.imgChangeHandle = function (file) {
 	} else {
 		this.createSlideItme(file);
 	}
+	this.layout.DBSaveImgFiles();
 }
 MSlide.prototype.delImgList = function (id) {
 	for (var i = 0; i < this.files.length; i++) {
@@ -192,6 +194,7 @@ MSlide.prototype.delImgList = function (id) {
 			break;
 		}
 	}
+	this.layout.DBSaveImgFiles();
 }
 
 MSlide.prototype.delUpLoaderImgList = function (imgIdList) {
@@ -203,6 +206,7 @@ MSlide.prototype.delUpLoaderImgList = function (imgIdList) {
 			}
 		}
 	};
+	this.layout.DBSaveImgFiles();
 }
 
 
@@ -459,7 +463,7 @@ MSlide.prototype.createSlideBox = function () {
 
 	var movebtn = createEle('i');
 	movebtn.className = 'move';
-	setAttr(movebtn, 'data-handleName', 'sortEventBox');	
+	setAttr(movebtn, 'data-handleName', 'sortBlock');
 	this.layout.setRespondEventElement(movebtn);
 	this.layout.bindEvent(movebtn, 'mousedown', this.layout.onMouseDown);
 
@@ -537,6 +541,7 @@ MSlide.prototype.delSlideBox = function (id) {
 	this.delUpLoaderImgList(imgIdList);
 	slideBox.remove();
 	delete window[id];
+	this.layout.DBSaveHtml()
 }
 
 MSlide.prototype.editSlideBox = function (id) {
@@ -564,6 +569,7 @@ MSlide.prototype.editSlideBox = function (id) {
 				file['eventname2'] = slideItem.getAttribute('data-eventname2');
 			}
 		}
+		console.log(file)
 		this.imgChangeHandle(file);
 		this.imgIdList.push(imgid);
 	}
@@ -600,6 +606,7 @@ MSlide.prototype.importInit = function () {
 		this.newSwipers(id, options);
 		var close = swiperBoxItem.querySelector('.close_slide');
 		var edit = swiperBoxItem.querySelector('.edit');
+		var move = swiperBoxItem.querySelector('.move');
 		(function (id) {
 			close.addEventListener('click', function () {
 				_this.delSlideBox(id);
@@ -607,6 +614,7 @@ MSlide.prototype.importInit = function () {
 			edit.addEventListener('click', function () {
 				_this.editSlideBox(id);
 			})
+			_this.layout.bindEvent(move, 'mousedown', _this.layout.onMouseDown);
 		})(id)
 	}
 }

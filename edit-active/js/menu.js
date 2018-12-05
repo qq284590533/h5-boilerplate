@@ -64,9 +64,10 @@ Menu.prototype.okBtnFun = function(){
 			setAttr(this.span, 'data-eventname2', this.selectGroup.h5PageName);
 		}
 	}
+	this.layout.DBSaveHtml();
 }
 
-Menu.prototype.open = function (span) {
+Menu.prototype.open = function (span,layout) {
 	var _this = this;
 	var val = null;
 	this.eventid1 = span.getAttribute('data-eventid1');
@@ -89,7 +90,7 @@ Menu.prototype.open = function (span) {
 	}
 	this.selectGroup = new SelectGroup(this.contBox, val);
 	this.span = span;
-
+	this.layout = layout;
 	if (this.selectGroup.input && this.span.getAttribute('data-h5')) {
 		this.selectGroup.input.value = this.selectGroup.h5Path = this.span.getAttribute('data-h5');
 		this.selectGroup.h5PageName = this.span.getAttribute('data-eventname2');

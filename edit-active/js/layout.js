@@ -10,6 +10,7 @@ function addCloseBtn(layout, span) {
 	i.className = 'close close_event';
 	i.addEventListener('click', function () {
 		span.remove();
+		layout.DBSaveHtml()
 	})
 	span.appendChild(i);
 }
@@ -122,11 +123,13 @@ Layout.prototype.init = function () {
 				getOssSign(files);
 			},
 			BeforeUpload: function (up, file) {
+				console.log(up)
 				ele('uploadImgTips').innerHTML = '开始上传图片'
 				ossBeforeUploadAction(up, file, _this);
 				return;
 			},
 			UploadProgress: function (up, file) {
+				console.log(file)
 				ele('uploadImgTips').innerHTML = '上传图片中……'
 			},
 			FileUploaded: function (up, file, info) {
@@ -188,6 +191,34 @@ Layout.prototype.init = function () {
 
 	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
 	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
+
+	localforage.getItem('filesList').then(function(value) {
+		if(value){
+			console.log(value);
+			value.forEach(function(item){
+				var pluploadFile = new plupload.File(new mOxie.File(null, item.file))
+				pluploadFile.id = item.id;
+				pluploadFile.isFromDB = true;
+				pluploadFile.nativeFile = item.file;
+				console.log(pluploadFile)
+				_this.imgUploader.addFile(item.file)
+				getOssSign()
+			})
+		}
+		console.log(_this.imgUploader)
+	}).catch(function(err) {
+		console.log(err);
+	});
+
+	localforage.getItem('layoutHtml').then(function(value) {
+		// 当离线仓库中的值被载入时，此处代码运行
+		// console.log(value);
+		ele('layout').innerHTML = value;
+		amendLayout(_this)
+	}).catch(function(err) {
+		// 当出错时，此处代码运行
+		console.log(err);
+	});
 }
 
 //绑定事件
@@ -222,36 +253,6 @@ function dataURLtoFile(dataurl, filename) {
 }
 
 Layout.prototype.createBlock = function(file, up, isfloat){
-	let source = file.getSource();
-	let fileNative = source.getSource()
-	fileNative.id = file.id;
-	console.log(file)
-	var blob = new Blob([file],{type:file.type});
-	console.log(blob)
-	let mOxieFile = new mOxie.File(null, blob)
-	let pluploadFile = new plupload.File(mOxieFile)
-	pluploadFile.name = file.name;
-	pluploadFile.lastModifiedDate = file.lastModifiedDate;
-	pluploadFile.imgsrc = file.imgsrc;
-	pluploadFile.id = file.id;
-	console.log(pluploadFile)
-	// saveFile(fileNative)
-	// let test = JSON.parse(window.localStorage.getItem('test'))
-	// console.log(test);
-	// // console.log(source.getSource())
-	// // var copyFile = JSON.parse(JSON.stringify(file))
-	// test.lastModifiedDate = new Date(test.lastModifiedDate)
-	// // console.log(file)
-	// let newfile = dataURLtoFile(test.imgsrc,'test');
-	// this.imgUploader.addFile(newfile,'test')
-	// console.log(newfile)
-	// var newFileObj = Object.assign(file,test);
-	// console.log(copyFile)
-	// console.log(file)
-	// console.log(newFileObj)
-	// console.log(newFileObj.getSource())
-	// console.log(up)
-	// window.localStorage.setItem('test',JSON.stringify(file))
 	var _this = this;
 	var div = createEle('div'),
 		eventbox = createEle('div'),
@@ -289,8 +290,11 @@ Layout.prototype.createBlock = function(file, up, isfloat){
 		for (var i = 0; i < up.files.length; i++) {
 			if (up.files[i].id == this.parentNode.id) {
 				up.files.splice(i, 1);
+				console.log(up.files)
 			}
 		}
+		_this.DBSaveImgFiles();
+		_this.DBSaveHtml()
 	})
 
 	editbtn.innerHTML = '／';
@@ -352,6 +356,43 @@ Layout.prototype.addImgHandle = function (div, file, up) {
 			}
 		}
 	}
+	this.DBSaveImgFiles();
+	this.DBSaveHtml();
+}
+
+Layout.prototype.DBSaveHtml = function () {
+	let htmlStr = this.elements.layout.innerHTML;
+	localforage.setItem('layoutHtml', htmlStr).then(function (value) {
+		// 当值被存储后，可执行其他操作
+		// console.log(value);
+	}).catch(function(err) {
+		// 当出错时，此处代码运行
+		console.log(err);
+	});
+}
+
+Layout.prototype.DBSaveImgFiles = function(){
+	var filesList = [];
+	this.imgUploader.files.forEach(function(item){
+		var nativeFile;
+		if(item.isFromDB){
+			nativeFile = item.nativeFile;
+		}else{
+			nativeFile = item.getSource().getSource();
+		}
+		var fileItem = {
+			id:item.id,
+			file:nativeFile,
+		}
+		filesList.push(fileItem);
+	})
+	localforage.setItem('filesList',filesList).then(function (value) {
+		// 当值被存储后，可执行其他操作
+		console.log(value);
+	}).catch(function(err) {
+		// 当出错时，此处代码运行
+		console.log(err);
+	});
 }
 
 function createImg(url) {
@@ -388,6 +429,10 @@ function htmlChange(layout) {
 
 //导入修改，初始化
 function amendLayout(layout) {
+
+	//初始化轮播组件
+	window.mslide.importInit();
+
 	var imgsList = layout.elements.layout.querySelectorAll("[data-echo]")
 	imgsList.forEach(function(item){
 		var src = item.getAttribute("data-echo");
@@ -405,7 +450,6 @@ function amendLayout(layout) {
 		})(eventbox)
 	});
 
-
 	var blocks = layout.elements.layout.querySelectorAll('.block');
 	blocks.forEach(function (block) {
 		var isfloat = block.getAttribute('data-isfloat');
@@ -413,23 +457,34 @@ function amendLayout(layout) {
 			layout.bindEvent(block,'mousedown',layout.onMouseDown)
 		}
 		var close = block.querySelector('.close_block');
-		var edit = block.querySelector('.edit');
-		close.addEventListener('click', function () {
-			this.parentNode.remove();
-			delete layout.imgFilesJson[this.parentNode.id];
-			for (var i = 0; i < layout.imgUploader.files.length; i++) {
-				if (layout.imgUploader.files[i].id == this.parentNode.id) {
-					layout.imgUploader.files.splice(i, 1);
+		var edit = block.querySelector('.edit:not([data-for])');
+		var move = block.querySelector('.move');
+		if(close){
+			close.addEventListener('click', function () {
+				this.parentNode.remove();
+				delete layout.imgFilesJson[this.parentNode.id];
+				for (var i = 0; i < layout.imgUploader.files.length; i++) {
+					if (layout.imgUploader.files[i].id == this.parentNode.id) {
+						layout.imgUploader.files.splice(i, 1);
+					}
 				}
-			}
-		})
-		edit.addEventListener('click', function () {
-			layout.blockId = this.parentNode.id;
-			layout.elements.addImg.click();
-		})
+				console.log(layout.imgUploader.files)
+				layout.DBSaveImgFiles()
+				layout.DBSaveHtml()
+			})
+		}
+		if(edit){
+			edit.addEventListener('click', function () {
+				layout.blockId = this.parentNode.id;
+				layout.elements.addImg.click();
+			})
+		}
+		if(move){
+			layout.bindEvent(move, 'mousedown', layout.onMouseDown);
+		}
 	})
 
-	var eventBoxList = layout.elements.layout.querySelectorAll('.eventbox .hasevent');
+	var eventBoxList = layout.elements.layout.querySelectorAll('.eventbox span');
 	eventBoxList.forEach(function (eventBox) {
 		layout.bindEvent(eventBox, 'mousemove', layout.onMouseMove);
 		layout.bindEvent(eventBox, 'mouseup', layout.onMouseUp);
@@ -439,11 +494,10 @@ function amendLayout(layout) {
 		var close = eventBox.querySelector('.close');
 		close.addEventListener('click', function () {
 			eventBox.remove();
+			layout.DBSaveHtml()
 		})
 	})
 
-	//初始化轮播组件
-	window.mslide.importInit();
 }
 
 //设置data-hasEvent属性，有这个属性的元素才能够响应定义的事件。
@@ -550,6 +604,7 @@ Layout.prototype.onMouseUp = function (layout, e) {
 			break;
 	}
 	resetDatas(layout)
+	layout.DBSaveHtml();
 }
 
 function getEleStyle(layout, element) {
@@ -802,6 +857,7 @@ function sortBlock_mousedown(layout, e){
 	layout.pageViewRect = ele('pageView').getBoundingClientRect();
 	layout.eventBox = e.target.parentNode;
 	var blockNodes = layoutBox.querySelectorAll(".block:not(.float-block)");
+	console.log(layout.eventBox)
 	blockNodes.forEach(function(item){
 		var blockInfo = {
 			id:item.id,
@@ -827,7 +883,7 @@ function sortBlock_mousedown(layout, e){
 	layout.placeBox.innerHTML =  "插入到此处";
 	layout.placeBox.className = 'placeBox';
 	layoutBox.insertBefore(layout.placeHolder,layout.eventBox);
-	layoutBox.insertBefore(layout.placeHolder,layout.eventBox);
+	layoutBox.insertBefore(layout.placeBox,layout.eventBox);
 	layout.eventBox.classList.add('draging');
 }
 
@@ -920,7 +976,7 @@ function mouseout(layout, e) {
 function contextmenu(layout, e) {
 	e.preventDefault ? e.preventDefault() : (e.returnValue = false);
 	e.stopPropagation();
-	layout.menu.open(e.target);
+	layout.menu.open(e.target,layout);
 }
 
 function createHtml(layout) {

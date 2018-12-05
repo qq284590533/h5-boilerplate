@@ -37,3 +37,4 @@ function funDownload(content, filename) {
 	// 然后移除
 	document.body.removeChild(eleLink);
 };
+
