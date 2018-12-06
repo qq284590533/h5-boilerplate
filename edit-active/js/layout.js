@@ -208,14 +208,14 @@ Layout.prototype.init = function () {
 
 	this.elements.clearStorage.addEventListener('click', function () {
 		localforage.removeItem('filesList').then(function() {
+			localforage.removeItem('layoutHtml').then(function() {
+				window.location.reload();
+			}).catch(function(err) {
+				console.log(err);
+			});
 		}).catch(function(err) {
 			console.log(err);
 		});
-		localforage.removeItem('layoutHtml').then(function() {
-		}).catch(function(err) {
-			console.log(err);
-		});
-		window.location.reload();
 	})
 
 	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
