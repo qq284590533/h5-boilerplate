@@ -28,7 +28,7 @@ function imgfileSucesse(file){
 	console.log('文件上传成功访问地址：'+signParams.fileServerUrl);
 }
 
-function getOssSign(files){
+function getOssSign(layout){
 	$.ajax({ //异步请求返回给后台
 		// url: 'https://owneradmintest.tticar.com/oss/getSign',
 		url: 'https://owneradmin.tticar.com/oss/getSign',

@@ -63,7 +63,8 @@ function Layout() {
 		layout: ele('layout'),
 		addImg: ele('addImg'),
 		selectHtml: ele('selectHtml'),
-		importHtml: ele('importHtml')
+		importHtml: ele('importHtml'),
+		clearStorage: ele('clearStorage')
 	};
 	this.steps = {};
 	this.boxStyle = {
@@ -95,6 +96,9 @@ function Layout() {
 	this.blockArea = [];
 	this.placeHolder = null;
 	this.placeBox = null;
+	this.initializing = false;
+	this.filesId = [];
+	this.UploaderCount = 0;
 	this.init();
 }
 
@@ -119,22 +123,29 @@ Layout.prototype.init = function () {
 			PostInit: function () { //上传初始化的操作函数
 			},
 			FilesAdded: function (up, files) {
+				// console.log('触发 FilesAdded')
 				_this.imgToView(up, files);
-				getOssSign(files);
 			},
 			BeforeUpload: function (up, file) {
-				console.log(up)
-				ele('uploadImgTips').innerHTML = '开始上传图片'
+				if(!_this.UploaderCount){
+					ele('uploadImgTips').innerHTML = '开始上传图片'
+				}
 				ossBeforeUploadAction(up, file, _this);
 				return;
 			},
 			UploadProgress: function (up, file) {
-				console.log(file)
-				ele('uploadImgTips').innerHTML = '上传图片中……'
+				// console.log(file)
+				ele('uploadImgTips').innerHTML = '上传图片中，请稍等……'
 			},
 			FileUploaded: function (up, file, info) {
+				_this.UploaderCount++;
 				imgfileSucesse(file)
-				ele('uploadImgTips').innerHTML = '图片上传完成！'
+				if(_this.UploaderCount==up.files.length){
+					console.log(up)
+					ele('uploadImgTips').innerHTML = '图片上传完成！';
+					createHtml(_this)
+					_this.UploaderCount=0;
+				}
 				up.refresh();
 			},
 			Error: function (up, error) {
@@ -183,32 +194,50 @@ Layout.prototype.init = function () {
 	});
 	this.htmlUploader.init();
 
-	this.bindEvent(ele('createHtml'), 'click', createHtml)
+	this.bindEvent(ele('createHtml'), 'click', updataFile)
 
 	this.elements.importHtml.addEventListener('click', function () {
+		var bool = true;
+		if(_this.imgUploader.files.length){
+			bool = window.confirm("导入文件会覆盖当前内容！你确定要导入吗？")
+		}
+		if(!bool) return;
 		_this.elements.selectHtml.click();
+		
+	})
+
+	this.elements.clearStorage.addEventListener('click', function () {
+		localforage.removeItem('filesList').then(function() {
+		}).catch(function(err) {
+			console.log(err);
+		});
+		localforage.removeItem('layoutHtml').then(function() {
+		}).catch(function(err) {
+			console.log(err);
+		});
+		window.location.reload();
 	})
 
 	this.bindEvent(this.elements.selectHtml, 'change', htmlChange);
 	this.bindEvent(document.body, 'mouseup', this.onMouseUp);
 
-	localforage.getItem('filesList').then(function(value) {
-		if(value){
-			console.log(value);
-			value.forEach(function(item){
-				var pluploadFile = new plupload.File(new mOxie.File(null, item.file))
-				pluploadFile.id = item.id;
-				pluploadFile.isFromDB = true;
-				pluploadFile.nativeFile = item.file;
-				console.log(pluploadFile)
-				_this.imgUploader.addFile(item.file)
-				getOssSign()
-			})
-		}
-		console.log(_this.imgUploader)
-	}).catch(function(err) {
-		console.log(err);
-	});
+	setTimeout(function(){
+		localforage.getItem('filesList').then(function(value) {
+			if(value){
+				// console.log(value);
+				var files = [];
+				_this.initializing = true;
+				value.forEach(function(item){
+					files.push(item.file)
+					_this.filesId.push(item.id);
+				})
+				_this.imgUploader.addFile(files)
+			}
+			// console.log(_this.imgUploader)
+		}).catch(function(err) {
+			console.log(err);
+		});
+	},200)
 
 	localforage.getItem('layoutHtml').then(function(value) {
 		// 当离线仓库中的值被载入时，此处代码运行
@@ -227,29 +256,6 @@ Layout.prototype.bindEvent = function (element, eventType, handle) {
 	element.addEventListener(eventType, function (e) {
 		handle(_this, e);
 	})
-}
-
-//将base64转换为文件
-function dataURLtoFile(dataurl, filename) {
-	var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-	bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-	while(n--){
-		u8arr[n] = bstr.charCodeAt(n);
-	}
-	return new File([u8arr], filename, {type:mime});
-  }
-
-  function saveFile(file){
-	var filesJson = window.localStorage.getItem('filesJson');
-	var fileItem = JSON.stringify(file);
-	console.log(fileItem)
-	if(filesJson){
-		filesJson[file.id] = fileItem
-	}else{
-		filesJson = {};
-		filesJson[file.id] = fileItem
-	}
-	window.localStorage.setItem('filesJson',filesJson)
 }
 
 Layout.prototype.createBlock = function(file, up, isfloat){
@@ -290,7 +296,7 @@ Layout.prototype.createBlock = function(file, up, isfloat){
 		for (var i = 0; i < up.files.length; i++) {
 			if (up.files[i].id == this.parentNode.id) {
 				up.files.splice(i, 1);
-				console.log(up.files)
+				// console.log(up.files)
 			}
 		}
 		_this.DBSaveImgFiles();
@@ -315,28 +321,46 @@ Layout.prototype.createBlock = function(file, up, isfloat){
 
 Layout.prototype.imgToView = function ( up, files) {
 	var _this = this;
-	plupload.each(files, function (file) {
-		if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
-			var fr = new mOxie.FileReader();
-			fr.onload = function () {
-				file.imgsrc = fr.result;
-				var div = _this.createBlock(file, up)
-				_this.addImgHandle( div, file, up)
+	if(this.initializing) {
+		// console.log('初始化中')
+		files.forEach(function(item,index){
+			// console.log(index)
+			// console.log(item)
+			// console.log(_this.filesId[index])
+			item.isFromDB = true;
+			item.nativeFile = item.getSource().getSource();
+			item.oldId = _this.filesId[index]
+			// item.id = _this.filesId[index]
+		})
+		_this.initializing = false;
+		// console.log(files)
+		// console.log('初始化结束',_this.initializing)
+	}else{
+		// console.log('添加图片')
+		plupload.each(files, function (file) {
+			if (file.type == 'image/gif') { //gif使用FileReader进行预览,因为mOxie.Image只支持jpg和png
+				var fr = new mOxie.FileReader();
+				fr.onload = function () {
+					file.imgsrc = fr.result;
+					var div = _this.createBlock(file, up)
+					_this.addImgHandle( div, file, up)
+				}
+				fr.readAsDataURL(file.getSource());
+			} else {
+				var preloader = new mOxie.Image();
+				preloader.onload = function () {
+					var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
+					file.imgsrc = imgsrc;
+					preloader.destroy();
+					preloader = null;
+					var div = _this.createBlock(file, up)
+					_this.addImgHandle( div, file, up)
+				};
+				preloader.load(file.getSource());
 			}
-			fr.readAsDataURL(file.getSource());
-		} else {
-			var preloader = new mOxie.Image();
-			preloader.onload = function () {
-				var imgsrc = preloader.getAsDataURL(); //得到图片src,实质为一个base64编码的数据
-				file.imgsrc = imgsrc;
-				preloader.destroy();
-				preloader = null;
-				var div = _this.createBlock(file, up)
-				_this.addImgHandle( div, file, up)
-			};
-			preloader.load(file.getSource());
-		}
-	});
+		});
+	}
+	getOssSign();
 }
 
 Layout.prototype.addImgHandle = function (div, file, up) {
@@ -351,7 +375,7 @@ Layout.prototype.addImgHandle = function (div, file, up) {
 		this.imgFilesJson[file.id] = file;
 		delete this.imgFilesJson[this.blockId];
 		for (var i = 0; i < up.files.length; i++) {
-			if (up.files[i].id == this.blockId) {
+			if (up.files[i].oldId&&up.files[i].oldId == this.blockId||up.files[i].id == this.blockId) {
 				up.files.splice(i, 1);
 			}
 		}
@@ -388,7 +412,7 @@ Layout.prototype.DBSaveImgFiles = function(){
 	})
 	localforage.setItem('filesList',filesList).then(function (value) {
 		// 当值被存储后，可执行其他操作
-		console.log(value);
+		// console.log(value);
 	}).catch(function(err) {
 		// 当出错时，此处代码运行
 		console.log(err);
@@ -424,6 +448,16 @@ function htmlChange(layout) {
 		};
 	}
 	document.body.appendChild(iframe);
+	localforage.removeItem('filesList').then(function() {
+	}).catch(function(err) {
+		console.log(err);
+	});
+	localforage.removeItem('layoutHtml').then(function() {
+	}).catch(function(err) {
+		console.log(err);
+	});
+	var files = layout.imgUploader.files
+	layout.imgUploader.splice(0, files.length)
 	layout.elements.selectHtml.value = null;
 }
 
@@ -464,11 +498,11 @@ function amendLayout(layout) {
 				this.parentNode.remove();
 				delete layout.imgFilesJson[this.parentNode.id];
 				for (var i = 0; i < layout.imgUploader.files.length; i++) {
-					if (layout.imgUploader.files[i].id == this.parentNode.id) {
+					if (layout.imgUploader.files[i].oldId&&layout.imgUploader.files[i].oldId == this.parentNode.id||layout.imgUploader.files[i].id == this.parentNode.id) {
 						layout.imgUploader.files.splice(i, 1);
 					}
 				}
-				console.log(layout.imgUploader.files)
+				// console.log(layout.imgUploader.files)
 				layout.DBSaveImgFiles()
 				layout.DBSaveHtml()
 			})
@@ -857,7 +891,7 @@ function sortBlock_mousedown(layout, e){
 	layout.pageViewRect = ele('pageView').getBoundingClientRect();
 	layout.eventBox = e.target.parentNode;
 	var blockNodes = layoutBox.querySelectorAll(".block:not(.float-block)");
-	console.log(layout.eventBox)
+	// console.log(layout.eventBox)
 	blockNodes.forEach(function(item){
 		var blockInfo = {
 			id:item.id,
@@ -868,8 +902,8 @@ function sortBlock_mousedown(layout, e){
 		layout.blockArea.push(blockInfo);
 	})
 	getPos(layout, e);
-	console.log(layout.pos)
-	console.log(layout.blockArea)
+	// console.log(layout.pos)
+	// console.log(layout.blockArea)
 	layout.spanBoxPos = {
 		y:layout.eventBox.offsetTop
 	}
@@ -979,7 +1013,7 @@ function contextmenu(layout, e) {
 	layout.menu.open(e.target,layout);
 }
 
-function createHtml(layout) {
+function updataFile(layout){
 	var name = document.getElementById('fileName').value;
 	var title = document.getElementById('titleName').value;
 	name = trim(name, 'g');
@@ -988,6 +1022,24 @@ function createHtml(layout) {
 		alert('文件名和标题不能为空！')
 		return
 	}
+	layout.htmlName = name;
+	layout.htmlTitle = title;
+	layout.filePath = name;
+	layout.imgUploader.start();
+}
+
+function createHtml(layout) {
+	// var name = document.getElementById('fileName').value;
+	// var title = document.getElementById('titleName').value;
+	// name = trim(name, 'g');
+	// title = trim(title, 'g');
+	// if (name == ''||title=='') {
+	// 	alert('文件名和标题不能为空！')
+	// 	return
+	// }
+
+	var name = layout.htmlName;
+	var title = layout.htmlTitle;
 
 	var htmlfoot = '<div id="browser"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.4.1/js/swiper.min.js"></script><script>window.Echo=(function(window,document,undefined){var store=[],offset,throttle,poll;var _inView=function(el){var coords=el.getBoundingClientRect();return((coords.top>=0&&coords.left>=0&&coords.top)<=(window.innerHeight||document.documentElement.clientHeight)+parseInt(offset))};var _pollImages=function(){for(var i=store.length;i--;){var self=store[i];if(_inView(self)){self.src=self.getAttribute("data-echo");self.removeAttribute("style");store.splice(i,1)}}};var _throttle=function(){clearTimeout(poll);poll=setTimeout(_pollImages,throttle)};var init=function(obj){var nodes=document.querySelectorAll("[data-echo]");var opts=obj||{};offset=opts.offset||0;throttle=opts.throttle||250;for(var i=0;i<nodes.length;i++){store.push(nodes[i])}_throttle();if(document.addEventListener){window.addEventListener("scroll",_throttle,false)}else{window.attachEvent("onscroll",_throttle)}};return{init:init,render:_throttle}})(window,document);function setWH(width){var imgs=document.querySelectorAll("[data-echo]");for(var i=0;i<imgs.length;i++){var imgW=imgs[i].getAttribute("data-wpercent")*width;var imgH=imgs[i].getAttribute("data-hwpercent")*imgW;imgs[i].style.width=imgW+"px";imgs[i].style.height=imgH+"px"}Echo.init({offset:200,throttle:0})}function urlJson(){var href=window.location.href;var ksbz=href.indexOf("?");var hrefStr=href.substr(ksbz+1);var splitStr=hrefStr.split("&");var urlObj={};for(var i=0;i<splitStr.length;i++){urlObj[splitStr[i].split("=")[0]]=splitStr[i].split("=")[1]}return urlObj}window.onload=function(){var width=document.body.offsetWidth;var urlObj=urlJson();var isShare=urlObj.isShare||false;var browser=document.getElementById("browser");browser.addEventListener("click",function(){this.style.display="none"});function is_weixn_qq(){var ua=navigator.userAgent.toLowerCase();if(ua.match(/MicroMessenger/i)=="micromessenger"||ua.match(/QQ/i)=="qq"){return true}return false}var swiperBoxList=document.querySelectorAll(".swiper-box");for(var i=0;i<swiperBoxList.length;i++){var item=swiperBoxList[i];(function(item){var swiperWrapper=item.querySelector(".swiper-wrapper");var img=swiperWrapper.querySelector("img");var imgW=img.getAttribute("data-wpercent")*width;var imgH=img.getAttribute("data-hwpercent")*imgW;var id=item.querySelector(".swiper-container").id;var selector="#"+id;var optionsJsonStr=item.getAttribute("data-slideOption");var options=JSON.parse(optionsJsonStr);if(options.scrollType=="slide"){new Swiper(selector,{autoHeight:true,loop:true,autoplay:options.autoplay?{delay:options.delay,disableOnInteraction:false,}:false,pagination:{el:".swiper-pagination",},})}else{new Swiper(selector,{loop:true,loopAdditionalSlides:2,freeModeMinimumVelocity:0.2,slidesPerView:"1.6",effect:"coverflow",centeredSlides:true,coverflowEffect:{rotate:50,stretch:3,depth:200,modifier:1,slideShadows:true},})}swiperWrapper.style.height=Math.round(imgH)+"px"})(item)}setWH(width);var spanList=document.querySelectorAll(".hasevent");for(var i=0;i<spanList.length;i++){var item=spanList[i];(function(item){item.addEventListener("click",function(e){var id1=item.getAttribute("data-eventid1");var id2=item.getAttribute("data-eventid2");id=id1;if(isShare=="true"){if(is_weixn_qq()){browser.style.display="block";return}else{if(id=="2"){window.location.href=this.getAttribute("data-h5");return}}}if(id=="2"){var dataH5=this.getAttribute("data-h5");if(dataH5.substring(0,3)=="tel"){window.location.href=dataH5}else{window.location.href="tticarstorecall://"+id+"/"+dataH5}return}if(id2){id=id1+"/"+id2}window.location.href="tticarstorecall://"+id})})(item)}};</script></body></html>';
 
@@ -1021,8 +1073,16 @@ function createHtml(layout) {
 
 	htmlbody = htmlbody.innerHTML;
 	var html = htmlhead + htmlbody + htmlfoot;
-	layout.filePath = name;
-	layout.imgUploader.start();
 	funDownload(html, filename);
 	htmlbody = null;
+	layout.htmlName = null;
+	layout.htmlTitle = null;
+	localforage.removeItem('filesList').then(function() {
+	}).catch(function(err) {
+		console.log(err);
+	});
+	localforage.removeItem('layoutHtml').then(function() {
+	}).catch(function(err) {
+		console.log(err);
+	});
 }

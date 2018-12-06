@@ -28,7 +28,7 @@ function MSlide(layout, popup) {
 
 MSlide.prototype.init = function () {
 	var _this = this;
-	this.imgUploader = new plupload.Uploader({
+	this.imgUploaderSlide = new plupload.Uploader({
 		runtimes: 'html5,flash,silverlight,html4',
 		browse_button: _this.addbtn,
 		url: 'http://oss.aliyuncs.com',
@@ -53,7 +53,7 @@ MSlide.prototype.init = function () {
 			}
 		}
 	});
-	this.imgUploader.init();
+	this.imgUploaderSlide.init();
 	this.openBtn.addEventListener('click', function () {
 		_this.popup.open({
 			width: '500px',
@@ -169,7 +169,7 @@ MSlide.prototype.imgChangeHandle = function (file) {
 		this.files.push(file);
 		this.imgIdList.push(file.id);
 	}
-	this.imgUploader.files = [];
+	this.imgUploaderSlide.files = [];
 	if (this.imgbox) {
 		var id = this.imgbox.id;
 		this.editSlideItme(file);
@@ -182,7 +182,7 @@ MSlide.prototype.imgChangeHandle = function (file) {
 }
 MSlide.prototype.delImgList = function (id) {
 	for (var i = 0; i < this.files.length; i++) {
-		if (this.files[i].id == id) {
+		if (this.files[i].oldId&&this.files[i].oldId == id||this.files[i].id == id) {
 			this.files.splice(i, 1);
 			break;
 		}
@@ -201,7 +201,7 @@ MSlide.prototype.delUpLoaderImgList = function (imgIdList) {
 	for (var i = 0; i < imgIdList.length; i++) {
 		var id = imgIdList[i];
 		for (var x = 0; x < this.files.length; x++) {
-			if (this.files[x].id == id) {
+			if (this.files[x].oldId&&this.files[x].oldId == id||this.files[x].id == id) {
 				this.files.splice(x, 1);
 			}
 		}

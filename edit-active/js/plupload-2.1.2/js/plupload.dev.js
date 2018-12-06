@@ -736,6 +736,7 @@ plupload.addFileFilter('prevent_duplicates', function(value, file, cb) {
 	@param {Boolean} [settings.send_file_name=true] Whether to send file name as additional argument - 'name' (required for chunked uploads and some other cases where file name cannot be sent via normal ways).
 */
 plupload.Uploader = function(options) {
+	//debugger
 	/**
 	 * Fires when the current RunTime has been initialized.
 	 *
@@ -970,6 +971,7 @@ plupload.Uploader = function(options) {
 
 
 	function getRUID() {
+		//debugger
 		var ctrl = fileInputs[0] || fileDrops[0];
 		if (ctrl) {
 			return ctrl.getRuntime().uid;
@@ -1016,6 +1018,7 @@ plupload.Uploader = function(options) {
 
 
 	function initControls(settings, cb) {
+		//debugger
 		var self = this, inited = 0, queue = [];
 
 		// common settings
@@ -1176,6 +1179,7 @@ plupload.Uploader = function(options) {
 
 
 	function setOption(option, value, init) {
+		//debugger
 		var self = this, reinitRequired = false;
 
 		function _setOption(option, value, init) {
@@ -1883,6 +1887,7 @@ plupload.Uploader = function(options) {
 		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
 		addFile : function(file, fileName) {
+			//debugger
 			var self = this
 			, queue = [] 
 			, filesAdded = []
@@ -1909,6 +1914,7 @@ plupload.Uploader = function(options) {
 			 * @param {o.File|o.Blob|plupload.File|File|Blob|input[type="file"]} file
 			 */
 			function resolveFile(file) {
+			// debugger
 				var type = o.typeOf(file);
 
 				// o.File
